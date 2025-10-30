@@ -1,4 +1,4 @@
-import type { Access, CollectionAfterReadHook, CollectionBeforeChangeHook, CollectionConfig } from 'payload';
+import type { Access, CollectionAfterChangeHook, CollectionAfterReadHook, CollectionBeforeChangeHook, CollectionConfig } from 'payload';
 
 const addUserToPublication: CollectionBeforeChangeHook = ({ req, data }) => {
    if (!req.user) {
@@ -69,6 +69,48 @@ const addRelationshipIds: CollectionAfterReadHook = ({ doc }) => {
    }
 
    return result;
+};
+
+const processPhotos: CollectionAfterChangeHook = async ({ doc, req, operation }) => {
+   const photosData = req.data?.photos;
+
+   if (!photosData || !Array.isArray(photosData) || photosData.length === 0) {
+      return doc;
+   }
+
+   const uploadedPhotos = [];
+
+   for (const photoData of photosData) {
+      try {
+         if (!photoData.data || !photoData.mimetype || !photoData.name) {
+            console.warn('Invalid photo data, skipping:', photoData);
+            continue;
+         }
+
+         const base64Data = photoData.data.replace(/^data:image\/\w+;base64,/, '');
+         const buffer = Buffer.from(base64Data, 'base64');
+
+         const photo = await req.payload.create({
+            collection: 'photos',
+            data: {
+               publication: doc.id,
+            },
+            file: {
+               data: buffer,
+               mimetype: photoData.mimetype,
+               name: photoData.name,
+               size: buffer.length,
+            },
+         });
+
+         uploadedPhotos.push(photo);
+      } catch (error) {
+         console.error('Error uploading photo:', error);
+      }
+   }
+
+   console.log(`Uploaded ${uploadedPhotos.length} photos for publication ${doc.id}`);
+   return doc;
 };
 
 export const Publications: CollectionConfig = {
@@ -364,9 +406,36 @@ export const Publications: CollectionConfig = {
          type: 'date',
          label: 'Data de Desaparecimento/Encontro',
       },
+      {
+         name: 'photos',
+         type: 'array',
+         label: 'Fotos (Base64)',
+         admin: {
+            hidden: true,
+            description: 'Array de objetos com data (base64), mimetype e name',
+         },
+         fields: [
+            {
+               name: 'data',
+               type: 'textarea',
+               required: true,
+            },
+            {
+               name: 'mimetype',
+               type: 'text',
+               required: true,
+            },
+            {
+               name: 'name',
+               type: 'text',
+               required: true,
+            },
+         ],
+      },
    ],
    hooks: {
       beforeChange: [logIncomingData, createLocationFromData, addUserToPublication],
+      afterChange: [processPhotos],
       afterRead: [addRelationshipIds],
    },
 };
