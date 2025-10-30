@@ -17,7 +17,6 @@ export type Animal = {
    color?: string | null;
    has_collar?: boolean | null;
    gender?: PayloadAnimal['gender'];
-   disappearance_date?: string | null;
    notes?: string | null;
 };
 
@@ -42,8 +41,29 @@ class PublishServices {
       }
    }
 
+   async listMyAnimals(userId: string): Promise<Animal[]> {
+      try {
+         // NOTE: Backend currently may not support ownership on animals; this filters by user if available.
+         const res = await api.get<{ docs: Animal[] }>(`/animals`, {
+            limit: 0,
+            where: { user: { equals: userId } },
+         } as any);
+         return res?.docs ?? [];
+      } catch {
+         // fallback: list all
+         return this.listAnimals();
+      }
+   }
+
    async listPosts() {
       return await api.get<PaginateResponse<Publication[]>>(`/publications`, { limit: 0 });
+   }
+
+   async listMyPosts(userId: string) {
+      return await api.get<PaginateResponse<Publication[]>>(`/publications`, {
+         limit: 0,
+         where: { user: { equals: userId } },
+      } as any);
    }
 
    async createAnimal(data: CreateAnimalInput): Promise<Animal> {
@@ -54,7 +74,6 @@ class PublishServices {
          color: data.color,
          has_collar: data.has_collar ?? false,
          gender: data.gender,
-         disappearance_date: data.disappearance_date,
          notes: data.notes,
       };
       return await api.post<Animal, typeof payload>(`/animals`, payload);
@@ -68,7 +87,6 @@ class PublishServices {
          color: data.color,
          has_collar: data.has_collar,
          gender: data.gender,
-         disappearance_date: data.disappearance_date,
          notes: data.notes,
       };
       return await api.post<Animal, typeof payload>(`/animals/${id}`, payload);
