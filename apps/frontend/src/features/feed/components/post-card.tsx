@@ -106,7 +106,7 @@ export function PostCard(props: PostCardProps) {
                )}
 
                {/* Date */}
-               {animal?.disappearance_date && (
+               {props.disappearance_date && (
                   <div className="flex items-center gap-2 text-sm">
                      <Calendar className="h-5 w-5 flex-shrink-0 text-primary" />
                      <div>
@@ -114,7 +114,7 @@ export function PostCard(props: PostCardProps) {
                            Data de {status === 'lost' ? 'desaparecimento' : 'encontro'}:
                         </p>
                         <p className="text-default-500">
-                           {disappearanceWithDays(animal.disappearance_date)}
+                           {disappearanceWithDays(props.disappearance_date)}
                         </p>
                      </div>
                   </div>

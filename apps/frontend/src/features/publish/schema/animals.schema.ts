@@ -9,7 +9,6 @@ export const AnimalsSchema = z.object({
    color: z.string(),
    has_collar: z.boolean(),
    gender: z.custom<GenderValue>(),
-   disappearance_date: z.string(),
    notes: z.string(),
    photos: z
       .array(z.instanceof(File, { message: 'Arquivo inválido' }))

@@ -140,7 +140,6 @@ export default function AnimalPicker({ animals, loading, selectedId, onSelect }:
                                  color: editing.color || undefined,
                                  has_collar: !!editing.has_collar,
                                  gender: editing.gender as any,
-                                 disappearance_date: editing.disappearance_date || undefined,
                                  notes: editing.notes || undefined,
                                  photos: [],
                               }}
