@@ -312,13 +312,123 @@ export const Publications: CollectionConfig = {
             },
          },
       },
+      {
+         path: '/my-publications',
+         method: 'get',
+         handler: async (req) => {
+            try {
+               if (!req.user) {
+                  return Response.json({
+                     success: false,
+                     error: 'Unauthorized',
+                  }, { status: 401 });
+               }
+
+               const url = req.url || '';
+               const { searchParams } = new URL(url, `http://localhost`);
+               const page = Number(searchParams.get('page')) || 1;
+               const limit = Number(searchParams.get('limit')) || 10;
+
+               const publications = await req.payload.find({
+                  collection: 'publications',
+                  where: {
+                     user: {
+                        equals: req.user.id,
+                     },
+                  },
+                  page,
+                  limit,
+                  depth: 1,
+                  sort: '-createdAt',
+               });
+
+               return Response.json(publications);
+            } catch (error) {
+               console.error('Erro ao buscar minhas publicações:', error);
+               return Response.json({
+                  success: false,
+                  error: 'Erro ao buscar publicações',
+               }, { status: 500 });
+            }
+         },
+         openapi: {
+            summary: 'Lista publicações do usuário autenticado',
+            description: 'Retorna apenas as publicações criadas pelo usuário logado, ordenadas por data de criação (mais recentes primeiro). Requer autenticação via Bearer token.',
+            tags: ['Publications'],
+            parameters: [
+               {
+                  name: 'page',
+                  in: 'query',
+                  description: 'Número da página (padrão: 1)',
+                  required: false,
+                  schema: {
+                     type: 'integer',
+                     default: 1,
+                     example: 1,
+                  },
+               },
+               {
+                  name: 'limit',
+                  in: 'query',
+                  description: 'Itens por página (padrão: 10)',
+                  required: false,
+                  schema: {
+                     type: 'integer',
+                     default: 10,
+                     example: 10,
+                  },
+               },
+            ],
+            responses: {
+               200: {
+                  description: 'Lista de publicações retornada com sucesso',
+                  content: {
+                     'application/json': {
+                        schema: {
+                           type: 'object',
+                           properties: {
+                              docs: {
+                                 type: 'array',
+                                 description: 'Array de publicações com relacionamentos populados',
+                              },
+                              totalDocs: {
+                                 type: 'integer',
+                              },
+                              page: {
+                                 type: 'integer',
+                              },
+                              limit: {
+                                 type: 'integer',
+                              },
+                           },
+                        },
+                     },
+                  },
+               },
+               401: {
+                  description: 'Usuário não autenticado',
+                  content: {
+                     'application/json': {
+                        schema: {
+                           type: 'object',
+                           properties: {
+                              success: {
+                                 type: 'boolean',
+                                 example: false,
+                              },
+                              error: {
+                                 type: 'string',
+                                 example: 'Unauthorized',
+                              },
+                           },
+                        },
+                     },
+                  },
+               },
+            },
+         },
+      },
    ],
-   // access: {
-   //     create: debugLogHeaders,
-   //     read: debugLogHeaders,
-   //     update: debugLogHeaders,
-   //     delete: debugLogHeaders,
-   // },
    access: {
       create: ({ req: { user } }) => !!user,
       read: () => true,
