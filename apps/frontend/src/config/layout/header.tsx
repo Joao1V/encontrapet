@@ -30,7 +30,7 @@ export function Header() {
 
    const menuItems = [
       { label: 'Como Funciona', href: '/#como-funciona' },
-      { label: 'Recursos', href: '/#recursos' },
+      { label: 'Publicações', href: '/feed' },
       { label: 'Sobre', href: '/#sobre' },
    ];
 
@@ -73,8 +73,8 @@ export function Header() {
             {session ? (
                <>
                   <NavbarItem className="hidden sm:flex">
-                     <Button as={Link} href="/feed" color="primary" variant="light">
-                        Feed
+                     <Button as={Link} href="/minhas-publicacoes" color="primary" variant="flat">
+                        Minhas publicações
                      </Button>
                   </NavbarItem>
                   <NavbarItem className="hidden sm:flex">
@@ -127,6 +127,30 @@ export function Header() {
                         onClick={() => setIsMenuOpen(false)}
                      >
                         Feed
+                     </Button>
+                  </NavbarMenuItem>
+                  <NavbarMenuItem>
+                     <Button
+                        as={Link}
+                        href="/minhas-publicacoes"
+                        color="primary"
+                        variant="flat"
+                        className="w-full"
+                        onPress={() => setIsMenuOpen(false)}
+                     >
+                        Minhas publicações
+                     </Button>
+                  </NavbarMenuItem>
+                  <NavbarMenuItem>
+                     <Button
+                        as={Link}
+                        href="/meus-animais"
+                        color="primary"
+                        variant="flat"
+                        className="w-full"
+                        onPress={() => setIsMenuOpen(false)}
+                     >
+                        Meus animais
                      </Button>
                   </NavbarMenuItem>
                   <NavbarMenuItem>

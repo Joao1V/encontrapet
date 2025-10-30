@@ -39,6 +39,20 @@ export function AuthAvatar() {
                      </div>
                   </DropdownItem>
                   <DropdownItem
+                     key="minhas-publicacoes"
+                     startContent={<User className="h-4 w-4" />}
+                     onPress={() => router.push('/minhas-publicacoes')}
+                  >
+                     Minhas publicações
+                  </DropdownItem>
+                  <DropdownItem
+                     key="meus-animais"
+                     startContent={<User className="h-4 w-4" />}
+                     onPress={() => router.push('/meus-animais')}
+                  >
+                     Meus animais
+                  </DropdownItem>
+                  <DropdownItem
                      key="perfil"
                      startContent={<User className="h-4 w-4" />}
                      onPress={() => router.push('/perfil')}
