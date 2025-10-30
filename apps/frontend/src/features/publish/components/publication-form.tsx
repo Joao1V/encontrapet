@@ -25,6 +25,7 @@ export default function PublicationForm({ defaultType, animalId, isSubmitting }:
          status: 'open',
          type: 'lost',
          animal: Number(animalId),
+         disappearance_date: '',
       },
    });
 
@@ -60,6 +61,19 @@ export default function PublicationForm({ defaultType, animalId, isSubmitting }:
                   label="Descrição"
                   minRows={4}
                   placeholder="Conte detalhes relevantes (características, como aconteceu, contato, etc.)"
+                  {...field}
+                  {...getFieldErrorProps(fieldState)}
+               />
+            )}
+         />
+
+         <Controller
+            name="disappearance_date"
+            control={control}
+            render={({ field, fieldState }) => (
+               <Input
+                  type="date"
+                  label="Data de Desaparecimento/Encontro"
                   {...field}
                   {...getFieldErrorProps(fieldState)}
                />

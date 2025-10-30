@@ -359,6 +359,11 @@ export const Publications: CollectionConfig = {
          relationTo: 'locations',
          hasMany: false,
       },
+      {
+         name: 'disappearance_date',
+         type: 'date',
+         label: 'Data de Desaparecimento/Encontro',
+      },
    ],
    hooks: {
       beforeChange: [logIncomingData, createLocationFromData, addUserToPublication],

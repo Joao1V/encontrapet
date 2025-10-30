@@ -30,7 +30,6 @@ export default function AnimalForm({ initial, animalId, onCreated, onSaved, onCa
          name: initial?.name ?? undefined,
          color: initial?.color ?? undefined,
          species: initial?.species ?? undefined,
-         disappearance_date: initial?.disappearance_date ?? undefined,
          has_collar: initial?.has_collar ?? false,
          size: initial?.size ?? undefined,
          gender: initial?.gender ?? undefined,
@@ -153,19 +152,6 @@ export default function AnimalForm({ initial, animalId, onCreated, onSaved, onCa
                <Checkbox isSelected={field.value} onValueChange={field.onChange}>
                   Tem coleira?
                </Checkbox>
-            )}
-         />
-
-         <Controller
-            name="disappearance_date"
-            control={control}
-            render={({ field, fieldState }) => (
-               <Input
-                  type="date"
-                  label="Data de Desaparecimento/Encontro"
-                  {...field}
-                  {...getFieldErrorProps(fieldState)}
-               />
             )}
          />
 

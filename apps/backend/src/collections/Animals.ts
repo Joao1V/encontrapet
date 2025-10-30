@@ -52,11 +52,6 @@ export const Animals: CollectionConfig = {
             ],
         },
         {
-            name: 'disappearance_date',
-            type: 'date',
-            label: 'Data de Desaparecimento/Encontro',
-        },
-        {
             name: 'notes',
             type: 'textarea',
             label: 'Notas Adicionais',

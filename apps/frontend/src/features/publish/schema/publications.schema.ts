@@ -13,6 +13,7 @@ const PublicationsSchemaInput = z.object({
    city: z.string(),
    state: z.string(),
    coordinates: z.tuple([z.number(), z.number()]),
+   disappearance_date: z.string(),
 });
 
 export const PublicationsSchema = PublicationsSchemaInput.transform((data) => ({

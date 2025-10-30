@@ -17,7 +17,6 @@ export type Animal = {
    color?: string | null;
    has_collar?: boolean | null;
    gender?: PayloadAnimal['gender'];
-   disappearance_date?: string | null;
    notes?: string | null;
 };
 
@@ -54,7 +53,6 @@ class PublishServices {
          color: data.color,
          has_collar: data.has_collar ?? false,
          gender: data.gender,
-         disappearance_date: data.disappearance_date,
          notes: data.notes,
       };
       return await api.post<Animal, typeof payload>(`/animals`, payload);
@@ -68,7 +66,6 @@ class PublishServices {
          color: data.color,
          has_collar: data.has_collar,
          gender: data.gender,
-         disappearance_date: data.disappearance_date,
          notes: data.notes,
       };
       return await api.post<Animal, typeof payload>(`/animals/${id}`, payload);
