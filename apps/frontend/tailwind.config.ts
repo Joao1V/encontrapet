@@ -1,4 +1,5 @@
 import { heroui } from '@heroui/theme';
+
 import type { Config } from 'tailwindcss';
 
 const config: Config = {
@@ -87,7 +88,7 @@ const config: Config = {
                      700: '#9e0c3e',
                      800: '#73092e',
                      900: '#49051d',
-                     foreground: '#000',
+                     foreground: '#fff',
                      DEFAULT: '#f31260',
                   },
                   background: '#ffffff',
