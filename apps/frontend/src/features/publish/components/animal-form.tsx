@@ -3,11 +3,15 @@
 import { Button, Checkbox, Input, Select, SelectItem, Textarea } from '@heroui/react';
 import { GENDER_OPTIONS, SIZE_OPTIONS, SPECIES_OPTIONS } from '@encontra-pet/utils';
 
+import {
+   useCreateAnimal,
+   useUpdateAnimal,
+   useUploadPhotoAnimal,
+} from '@/features/animals/services';
 import { getFieldErrorProps } from '@/lib/utils';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Controller, useForm } from 'react-hook-form';
 import { AnimalsSchema, type AnimalsType } from '../schema/animals.schema';
-import { publishApi } from '../services/api';
 import PhotoDropzone from './photo-dropzone';
 
 type Props = {
@@ -36,6 +40,9 @@ export default function AnimalForm({ initial, animalId, onCreated, onSaved, onCa
          notes: initial?.notes ?? undefined,
       },
    });
+   const createAnimal = useCreateAnimal();
+   const updateAnimal = useUpdateAnimal();
+   const uploadPhotoAnimal = useUploadPhotoAnimal();
 
    const handlePhotosChange = (updated: File[]) => {
       setValue('photos', updated, { shouldValidate: true });
@@ -44,15 +51,15 @@ export default function AnimalForm({ initial, animalId, onCreated, onSaved, onCa
    const onSubmit = async (data: AnimalsType) => {
       const { photos, ...payload } = data;
       if (animalId) {
-         const updated = await publishApi.updateAnimal(animalId, payload);
+         const updated = await updateAnimal.mutateAsync({ id: animalId, data: payload });
          if (photos?.length) {
-            await publishApi.uploadAnimalPhotos(updated.id, photos);
+            await uploadPhotoAnimal.mutateAsync({ id: Number(updated.id), photos });
          }
          onSaved?.({ id: updated.id, name: updated.name });
       } else {
-         const created = await publishApi.createAnimal(payload);
+         const created = await createAnimal.mutateAsync(payload);
          if (photos?.length) {
-            await publishApi.uploadAnimalPhotos(created.id, photos);
+            await uploadPhotoAnimal.mutateAsync({ id: Number(created.id), photos });
          }
          onCreated?.({ id: created.id, name: created.name });
       }
@@ -171,7 +178,7 @@ export default function AnimalForm({ initial, animalId, onCreated, onSaved, onCa
 
          {/* Fotos */}
          <div>
-            <p className="mb-2 font-medium text-sm">Fotos (até 3)</p>
+            <p className="mb-2 font-medium text-sm">Selecione até 3 fotos do seu bichinho</p>
             <Controller
                name="photos"
                control={control}
@@ -191,13 +198,4 @@ export default function AnimalForm({ initial, animalId, onCreated, onSaved, onCa
          </div>
       </form>
    );
-}
-
-async function fileToDataUrl(file: File) {
-   const reader = new FileReader();
-   const dataUrl = await new Promise<string>((resolve) => {
-      reader.onload = () => resolve(reader.result as string);
-      reader.readAsDataURL(file);
-   });
-   return dataUrl;
 }

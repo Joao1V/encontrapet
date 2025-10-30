@@ -13,7 +13,7 @@ import {
 } from '@heroui/react';
 import { LABEL_BY_VALUE } from '@encontra-pet/utils';
 
-import { publishKeys, useDeleteAnimal } from '@/features/publish/services';
+import { useDeleteAnimal } from '@/features/animals/services';
 import { useQueryClient } from '@tanstack/react-query';
 import { PawPrint, Pencil, Trash2 } from 'lucide-react';
 import type { Animal } from '../services/api';
@@ -46,7 +46,7 @@ export default function AnimalPicker({ animals, loading, selectedId, onSelect }:
 
    const handleEditSaved = async () => {
       setEditing(null);
-      await qc.invalidateQueries({ queryKey: publishKeys.animals });
+      // await qc.invalidateQueries({ queryKey: publishKeys.animals });
    };
 
    return (
