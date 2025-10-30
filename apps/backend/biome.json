@@ -1,0 +1,21 @@
+{
+   "extends": "//",
+   "linter": {
+      "enabled": true,
+      "rules": {
+         "recommended": true,
+         "suspicious": {
+            "noUnknownAtRules": "off",
+            "noArrayIndexKey": "off"
+         },
+         "style": {
+            "useImportType": "error",
+            "useNodejsImportProtocol": "error"
+         },
+
+         "correctness": {
+            "noUnusedImports": "warn"
+         }
+      }
+   }
+}

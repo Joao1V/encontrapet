@@ -1,0 +1,19 @@
+@import "tailwindcss";
+@config "../../tailwind.config.ts";
+
+@theme {
+   --color-border: oklch(0.9 0.01 85);
+   --color-primary: oklch(0.65 0.18 45);
+   --color-secondary: oklch(0.72 0.12 195);
+   --color-secondary-foreground: oklch(0.99 0.01 85);
+   --color-background: oklch(0.99 0.01 85);
+   --color-foreground: oklch(0.25 0.02 280);
+   --color-muted: oklch(0.96 0.01 85);
+   --color-muted-foreground: oklch(0.55 0.02 280);
+}
+
+@layer base {
+   body {
+      @apply bg-background text-foreground;
+   }
+}

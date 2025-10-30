@@ -1,0 +1,9 @@
+packages:
+  - apps/*
+  - packages/*
+
+ignoredBuiltDependencies:
+  - '@heroui/shared-utils'
+  - esbuild
+  - sharp
+  - unrs-resolver

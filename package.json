@@ -1,0 +1,32 @@
+{
+   "name": "encontrapet",
+   "version": "1.0.0",
+   "private": true,
+   "type": "module",
+   "packageManager": "pnpm@10.19.0",
+   "scripts": {
+      "dev": "pnpm --parallel --filter \"./apps/*\" dev",
+      "dev:backend": "pnpm --filter backend dev",
+      "dev:frontend": "pnpm --filter frontend dev",
+      "build": "pnpm --filter \"./apps/*\" build",
+      "build:backend": "pnpm --filter backend build",
+      "build:frontend": "pnpm --filter frontend build",
+      "lint": "pnpm --filter \"./apps/*\" lint",
+      "format": "biome format --write .",
+      "check": "biome check --write .",
+      "clean": "pnpm clean:cache && pnpm clean:deps",
+      "clean:cache": "rm -rf apps/*/.next apps/*/.turbo .turbo node_modules/.cache",
+      "clean:deps": "rm -rf node_modules apps/*/node_modules packages/*/node_modules",
+      "clean:all": "pnpm clean && pnpm install"
+   },
+   "devDependencies": {
+      "@biomejs/biome": "^2.2.7"
+   },
+   "pnpm": {
+      "onlyBuiltDependencies": [
+         "sharp",
+         "esbuild",
+         "unrs-resolver"
+      ]
+   }
+}

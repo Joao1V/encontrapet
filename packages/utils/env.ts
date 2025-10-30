@@ -1,0 +1,2 @@
+const SESSION_MAX_AGE_DAYS = 1;
+export const SESSION_MAX_AGE = 60 * 60 * 24 * SESSION_MAX_AGE_DAYS;

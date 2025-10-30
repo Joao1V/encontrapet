@@ -1,0 +1,48 @@
+{
+   "extends": "//",
+   "linter": {
+      "enabled": true,
+      "rules": {
+         "recommended": true,
+         "suspicious": {
+            "noUnknownAtRules": "off",
+            "noArrayIndexKey": "off"
+         },
+         "style": {
+            "useImportType": "error",
+            "useNodejsImportProtocol": "error"
+         },
+         "nursery": {
+            "useSortedClasses": {
+               "level": "warn",
+               "fix": "safe",
+               "options": {
+                  "attributes": ["className"],
+                  "functions": ["cn", "clsx", "cva"]
+               }
+            }
+         },
+         "correctness": {
+            "noUnusedImports": "warn",
+            "useExhaustiveDependencies": "off"
+         },
+         "complexity": {
+            "noStaticOnlyClass": "off",
+            "noThisInStatic": "off",
+            "noUselessFragments": "off"
+         }
+      }
+   },
+   "overrides": [
+      {
+         "includes": ["src/**/*.css"],
+         "linter": {
+            "rules": {
+               "suspicious": {
+                  "noUnknownAtRules": "off"
+               }
+            }
+         }
+      }
+   ]
+}
