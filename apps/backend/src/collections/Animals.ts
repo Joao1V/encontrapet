@@ -1,4 +1,12 @@
-import type { CollectionAfterChangeHook, CollectionConfig } from 'payload';
+import type { CollectionAfterChangeHook, CollectionBeforeChangeHook, CollectionConfig } from 'payload';
+
+const addUserToAnimal: CollectionBeforeChangeHook = ({ req, data }) => {
+    if (!req.user) {
+        return data;
+    }
+
+    return { ...data, user: req.user.id };
+};
 
 const processPhotos: CollectionAfterChangeHook = async ({ doc, req, operation }) => {
     const photosData = req.data?.photos;
@@ -44,16 +52,161 @@ const processPhotos: CollectionAfterChangeHook = async ({ doc, req, operation })
 
 export const Animals: CollectionConfig = {
     slug: 'animals',
+    endpoints: [
+        {
+            path: '/my-animals',
+            method: 'get',
+            handler: async (req) => {
+                try {
+                    if (!req.user) {
+                        return Response.json({
+                            success: false,
+                            error: 'Unauthorized',
+                        }, { status: 401 });
+                    }
+
+                    const url = req.url || '';
+                    const { searchParams } = new URL(url, `http://localhost`);
+                    const page = Number(searchParams.get('page')) || 1;
+                    const limit = Number(searchParams.get('limit')) || 10;
+
+                    const animals = await req.payload.find({
+                        collection: 'animals',
+                        where: {
+                            user: {
+                                equals: req.user.id,
+                            },
+                        },
+                        page,
+                        limit,
+                        sort: '-createdAt',
+                    });
+
+                    return Response.json(animals);
+                } catch (error) {
+                    console.error('Erro ao buscar meus animais:', error);
+                    return Response.json({
+                        success: false,
+                        error: 'Erro ao buscar animais',
+                    }, { status: 500 });
+                }
+            },
+            openapi: {
+                summary: 'Lista animais do usuário autenticado',
+                description: 'Retorna apenas os animais criados pelo usuário logado, ordenados por data de criação (mais recentes primeiro). Requer autenticação via Bearer token.',
+                tags: ['Animals'],
+                parameters: [
+                    {
+                        name: 'page',
+                        in: 'query',
+                        description: 'Número da página (padrão: 1)',
+                        required: false,
+                        schema: {
+                            type: 'integer',
+                            default: 1,
+                            example: 1,
+                        },
+                    },
+                    {
+                        name: 'limit',
+                        in: 'query',
+                        description: 'Itens por página (padrão: 10)',
+                        required: false,
+                        schema: {
+                            type: 'integer',
+                            default: 10,
+                            example: 10,
+                        },
+                    },
+                ],
+                responses: {
+                    200: {
+                        description: 'Lista de animais retornada com sucesso',
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: 'object',
+                                    properties: {
+                                        docs: {
+                                            type: 'array',
+                                            description: 'Array de animais',
+                                        },
+                                        totalDocs: {
+                                            type: 'integer',
+                                        },
+                                        page: {
+                                            type: 'integer',
+                                        },
+                                        limit: {
+                                            type: 'integer',
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                    401: {
+                        description: 'Usuário não autenticado',
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: 'object',
+                                    properties: {
+                                        success: {
+                                            type: 'boolean',
+                                            example: false,
+                                        },
+                                        error: {
+                                            type: 'string',
+                                            example: 'Unauthorized',
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        },
+    ],
     access: {
+        create: ({ req: { user } }) => !!user,
         read: () => true,
+        update: ({ req: { user } }) => {
+            if (!user) return false;
+            return {
+                user: {
+                    equals: user.id,
+                },
+            };
+        },
+        delete: ({ req: { user } }) => {
+            if (!user) return false;
+            return {
+                user: {
+                    equals: user.id,
+                },
+            };
+        },
     },
     admin: {
         useAsTitle: 'name',
     },
     hooks: {
+        beforeChange: [addUserToAnimal],
         afterChange: [processPhotos],
     },
     fields: [
+        {
+            name: 'user',
+            type: 'relationship',
+            relationTo: 'users',
+            required: true,
+            admin: {
+                readOnly: true,
+                position: 'sidebar',
+            },
+        },
         {
             name: 'name',
             type: 'text',
