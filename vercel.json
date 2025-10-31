@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "buildCommand": "pnpm build:frontend",
+  "outputDirectory": "apps/frontend/.next",
+  "installCommand": "pnpm install",
+  "framework": "nextjs",
+  "builds": [
+    {
+      "src": "apps/frontend/package.json",
+      "use": "@vercel/next"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "apps/frontend/$1"
+    }
+  ]
+}
