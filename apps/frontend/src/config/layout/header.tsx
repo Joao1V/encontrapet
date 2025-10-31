@@ -39,7 +39,8 @@ export function Header() {
          isMenuOpen={isMenuOpen}
          onMenuOpenChange={setIsMenuOpen}
          maxWidth="xl"
-         className="border-divider border-b"
+         isBlurred
+         isBordered
       >
          <NavbarContent>
             <NavbarMenuToggle
@@ -56,22 +57,29 @@ export function Header() {
             </NavbarBrand>
          </NavbarContent>
 
-         <NavbarContent className="hidden gap-8 sm:flex" justify="center">
-            {menuItems.map((item) => (
-               <NavbarItem key={item.href}>
-                  <Link
-                     href={item.href}
-                     className="font-medium text-default-600 text-sm transition-colors hover:text-foreground"
-                  >
-                     {item.label}
-                  </Link>
-               </NavbarItem>
-            ))}
-         </NavbarContent>
+         {!session && (
+            <NavbarContent className="hidden gap-8 sm:flex" justify="center">
+               {menuItems.map((item) => (
+                  <NavbarItem key={item.href}>
+                     <Link
+                        href={item.href}
+                        className="font-medium text-default-600 text-sm transition-colors hover:text-foreground"
+                     >
+                        {item.label}
+                     </Link>
+                  </NavbarItem>
+               ))}
+            </NavbarContent>
+         )}
 
          <NavbarContent justify="end">
             {session ? (
                <>
+                  <NavbarItem className="hidden sm:flex">
+                     <Button as={Link} href="/feed" color="secondary" variant="light">
+                        Ver publicações
+                     </Button>
+                  </NavbarItem>
                   <NavbarItem className="hidden sm:flex">
                      <Button as={Link} href="/minhas-publicacoes" color="primary" variant="flat">
                         Minhas publicações
@@ -124,7 +132,7 @@ export function Header() {
                         color="primary"
                         variant="solid"
                         className="w-full font-semibold"
-                        onClick={() => setIsMenuOpen(false)}
+                        onPress={() => setIsMenuOpen(false)}
                      >
                         Feed
                      </Button>
@@ -177,7 +185,7 @@ export function Header() {
                         color="primary"
                         variant="light"
                         className="w-full"
-                        onClick={() => setIsMenuOpen(false)}
+                        onPress={() => setIsMenuOpen(false)}
                      >
                         Entrar
                      </Button>
@@ -189,7 +197,7 @@ export function Header() {
                         color="primary"
                         variant="solid"
                         className="w-full font-semibold"
-                        onClick={() => setIsMenuOpen(false)}
+                        onPress={() => setIsMenuOpen(false)}
                      >
                         Cadastrar
                      </Button>
