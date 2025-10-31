@@ -265,31 +265,5 @@ export const Animals: CollectionConfig = {
          type: 'textarea',
          label: 'Notas Adicionais',
       },
-      {
-         name: 'photos',
-         type: 'array',
-         label: 'Fotos (Base64)',
-         admin: {
-            hidden: true,
-            description: 'Array de objetos com data (base64), mimetype e name',
-         },
-         fields: [
-            {
-               name: 'data',
-               type: 'textarea',
-               required: true,
-            },
-            {
-               name: 'mimetype',
-               type: 'text',
-               required: true,
-            },
-            {
-               name: 'name',
-               type: 'text',
-               required: true,
-            },
-         ],
-      },
    ],
 };
