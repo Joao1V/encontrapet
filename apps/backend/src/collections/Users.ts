@@ -19,21 +19,6 @@ export const Users: CollectionConfig = {
             return data;
          },
       ],
-      afterRead: [
-         ({ doc, req }) => {
-            const isAdmin = (req.user as any)?.role === 'admin';
-            const isOwner = req.user && req.user.id === doc.id;
-
-            if (!isAdmin && !isOwner) {
-               return {
-                  id: doc.id,
-                  name: doc.name,
-               };
-            }
-
-            return doc;
-         },
-      ],
    },
    access: {
       admin: ({ req: { user } }) => {
