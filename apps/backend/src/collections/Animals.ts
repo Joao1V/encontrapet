@@ -87,6 +87,58 @@ export const Animals: CollectionConfig = {
    slug: 'animals',
    endpoints: [
       {
+         path: '/',
+         method: 'get',
+         handler: async (req) => {
+            try {
+               const url = req.url || '';
+               const { searchParams } = new URL(url, `http://localhost`);
+               const page = Number(searchParams.get('page')) || 1;
+               const limit = Number(searchParams.get('limit')) || 10;
+
+               const animals = await req.payload.find({
+                  collection: 'animals',
+                  page,
+                  limit,
+                  sort: '-createdAt',
+               });
+
+               const animalsWithPhotos = await Promise.all(
+                  animals.docs.map(async (animal) => {
+                     const photos = await req.payload.find({
+                        collection: 'photos',
+                        where: {
+                           animal: {
+                              equals: animal.id,
+                           },
+                        },
+                        limit: 100,
+                     });
+
+                     return {
+                        ...animal,
+                        photos: photos.docs,
+                     };
+                  }),
+               );
+
+               return Response.json({
+                  ...animals,
+                  docs: animalsWithPhotos,
+               });
+            } catch (error) {
+               console.error('Erro ao listar animais:', error);
+               return Response.json(
+                  {
+                     success: false,
+                     error: 'Erro ao listar animais',
+                  },
+                  { status: 500 },
+               );
+            }
+         },
+      },
+      {
          path: '/me',
          method: 'get',
          handler: async (req) => {

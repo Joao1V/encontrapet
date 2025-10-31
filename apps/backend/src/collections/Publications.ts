@@ -152,6 +152,79 @@ export const Publications: CollectionConfig = {
    slug: 'publications',
    endpoints: [
       {
+         path: '/',
+         method: 'get',
+         handler: async (req) => {
+            try {
+               const url = req.url || '';
+               const { searchParams } = new URL(url, `http://localhost`);
+               const page = Number(searchParams.get('page')) || 1;
+               const limit = Number(searchParams.get('limit')) || 10;
+
+               const publications = await req.payload.find({
+                  collection: 'publications',
+                  page,
+                  limit,
+                  depth: 1,
+                  sort: '-createdAt',
+               });
+
+               const publicationsWithPhotos = await Promise.all(
+                  publications.docs.map(async (publication) => {
+                     const photos = await req.payload.find({
+                        collection: 'photos',
+                        where: {
+                           publication: {
+                              equals: publication.id,
+                           },
+                        },
+                        limit: 100,
+                     });
+
+                     let animalPhotos: any[] = [];
+                     if (publication.animal && typeof publication.animal === 'object' && publication.animal.id) {
+                        const animalPhotosResult = await req.payload.find({
+                           collection: 'photos',
+                           where: {
+                              animal: {
+                                 equals: publication.animal.id,
+                              },
+                           },
+                           limit: 100,
+                        });
+                        animalPhotos = animalPhotosResult.docs;
+                     }
+
+                     return {
+                        ...publication,
+                        photos: photos.docs,
+                        animal: publication.animal && typeof publication.animal === 'object'
+                           ? {
+                              ...publication.animal,
+                              photos: animalPhotos,
+                           }
+                           : publication.animal,
+                     };
+                  }),
+               );
+
+               return Response.json({
+                  ...publications,
+                  docs: publicationsWithPhotos,
+               });
+            } catch (error) {
+               console.error('Erro ao listar publicações:', error);
+               return Response.json(
+                  {
+                     success: false,
+                     error: 'Erro ao listar publicações',
+                  },
+                  { status: 500 },
+               );
+            }
+         },
+      },
+      {
          path: '/search',
          method: 'get',
          handler: async (req) => {
