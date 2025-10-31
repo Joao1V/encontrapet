@@ -1,4 +1,10 @@
-import type { Access, CollectionAfterChangeHook, CollectionAfterReadHook, CollectionBeforeChangeHook, CollectionConfig } from 'payload';
+import type {
+   Access,
+   CollectionAfterChangeHook,
+   CollectionAfterReadHook,
+   CollectionBeforeChangeHook,
+   CollectionConfig,
+} from 'payload';
 
 const addUserToPublication: CollectionBeforeChangeHook = ({ req, data }) => {
    if (!req.user) {
@@ -143,7 +149,7 @@ export const Publications: CollectionConfig = {
                      limit: 1000,
                   });
 
-                  const locationIds = locations.docs.map(loc => loc.id);
+                  const locationIds = locations.docs.map((loc) => loc.id);
                   if (locationIds.length > 0) {
                      where.and.push({ location: { in: locationIds } });
                   }
@@ -151,10 +157,7 @@ export const Publications: CollectionConfig = {
 
                if (text) {
                   where.and.push({
-                     or: [
-                        { title: { contains: text } },
-                        { description: { contains: text } },
-                     ],
+                     or: [{ title: { contains: text } }, { description: { contains: text } }],
                   });
                }
 
@@ -171,15 +174,19 @@ export const Publications: CollectionConfig = {
                return Response.json(publications);
             } catch (error) {
                console.error('Erro na busca:', error);
-               return Response.json({
-                  success: false,
-                  error: 'Erro ao buscar publicações',
-               }, { status: 500 });
+               return Response.json(
+                  {
+                     success: false,
+                     error: 'Erro ao buscar publicações',
+                  },
+                  { status: 500 },
+               );
             }
          },
          openapi: {
             summary: 'Busca avançada de publicações',
-            description: 'Busca publicações com filtros combinados por tipo, bairro e texto. Retorna resultados paginados com dados de relacionamentos populados (animal, location, user).',
+            description:
+               'Busca publicações com filtros combinados por tipo, bairro e texto. Retorna resultados paginados com dados de relacionamentos populados (animal, location, user).',
             tags: ['Publications'],
             parameters: [
                {
@@ -248,7 +255,8 @@ export const Publications: CollectionConfig = {
                                  type: 'array',
                                  items: {
                                     type: 'object',
-                                    description: 'Objeto da publicação com relacionamentos populados',
+                                    description:
+                                       'Objeto da publicação com relacionamentos populados',
                                  },
                               },
                               totalDocs: {
@@ -313,15 +321,18 @@ export const Publications: CollectionConfig = {
          },
       },
       {
-         path: '/my-publications',
+         path: '/me',
          method: 'get',
          handler: async (req) => {
             try {
                if (!req.user) {
-                  return Response.json({
-                     success: false,
-                     error: 'Unauthorized',
-                  }, { status: 401 });
+                  return Response.json(
+                     {
+                        success: false,
+                        error: 'Unauthorized',
+                     },
+                     { status: 401 },
+                  );
                }
 
                const url = req.url || '';
@@ -345,15 +356,19 @@ export const Publications: CollectionConfig = {
                return Response.json(publications);
             } catch (error) {
                console.error('Erro ao buscar minhas publicações:', error);
-               return Response.json({
-                  success: false,
-                  error: 'Erro ao buscar publicações',
-               }, { status: 500 });
+               return Response.json(
+                  {
+                     success: false,
+                     error: 'Erro ao buscar publicações',
+                  },
+                  { status: 500 },
+               );
             }
          },
          openapi: {
             summary: 'Lista publicações do usuário autenticado',
-            description: 'Retorna apenas as publicações criadas pelo usuário logado, ordenadas por data de criação (mais recentes primeiro). Requer autenticação via Bearer token.',
+            description:
+               'Retorna apenas as publicações criadas pelo usuário logado, ordenadas por data de criação (mais recentes primeiro). Requer autenticação via Bearer token.',
             tags: ['Publications'],
             parameters: [
                {
