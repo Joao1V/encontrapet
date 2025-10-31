@@ -1,71 +1,55 @@
 'use client';
 
-import { Button, Checkbox, Input, Select, SelectItem, Textarea } from '@heroui/react';
+import { Checkbox, Input, Select, SelectItem, Textarea } from '@heroui/react';
 import { GENDER_OPTIONS, SIZE_OPTIONS, SPECIES_OPTIONS } from '@encontra-pet/utils';
 
-import {
-   useCreateAnimal,
-   useUpdateAnimal,
-   useUploadPhotoAnimal,
-} from '@/features/animals/services';
+import { QUERY_KEYS } from '@/config/constants';
+import { useCreateAnimal, useUpdateAnimal } from '@/features/animals/services';
 import { getFieldErrorProps } from '@/lib/utils';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Controller, useForm } from 'react-hook-form';
-import { AnimalsSchema, type AnimalsType } from '../schema/animals.schema';
+import { useQueryClient } from '@tanstack/react-query';
+import { Controller, useFormContext } from 'react-hook-form';
+import type { AnimalsType } from '../schema/animals.schema';
 import PhotoDropzone, { type PhotoItem } from './photo-dropzone';
 
-type Props = {
+type AnimalFormProps = {
+   id: string;
    initial?: Partial<AnimalsType>;
    animalId?: number;
-   onCreated?: (animal: { id: string; name: string }) => void;
-   onSaved?: (animal: { id: string; name: string }) => void;
+   onCreated?: (animal: { id: number; name: string }) => void;
+   onSaved?: (animal: { id: number; name: string }) => void;
    onCancel: () => void;
+   photos?: { id: number; url: string }[];
 };
 
-export default function AnimalForm({ initial, animalId, onCreated, onSaved, onCancel }: Props) {
-   const {
-      control,
-      handleSubmit,
-      setValue,
-      formState: { isSubmitting },
-   } = useForm<AnimalsType>({
-      resolver: zodResolver(AnimalsSchema),
-      defaultValues: {
-         name: initial?.name ?? undefined,
-         color: initial?.color ?? undefined,
-         species: initial?.species ?? undefined,
-         has_collar: initial?.has_collar ?? false,
-         size: initial?.size ?? undefined,
-         gender: initial?.gender ?? undefined,
-         notes: initial?.notes ?? undefined,
-      },
-   });
+export default function AnimalForm({ animalId, onCreated, onSaved, id, photos }: AnimalFormProps) {
+   const { control, handleSubmit, setValue } = useFormContext<AnimalsType>();
+   const qc = useQueryClient();
    const createAnimal = useCreateAnimal();
    const updateAnimal = useUpdateAnimal();
-   const uploadPhotoAnimal = useUploadPhotoAnimal();
 
    const handlePhotosChange = (updated: PhotoItem[]) => {
-      // Guarda no formato requerido: { data: Base64, mimetype: string, name: string }
       console.log(updated);
-      setValue('photos' as any, updated as any, { shouldValidate: true });
+      setValue('photos', updated, { shouldValidate: true });
    };
 
    const onSubmit = async (data: AnimalsType) => {
       const payload = data;
       if (animalId) {
-         console.log('edit', { id: animalId, data: payload });
          const updated = await updateAnimal.mutateAsync({ id: animalId, data: payload });
-
          onSaved?.({ id: updated.id, name: updated.name });
       } else {
          const created = await createAnimal.mutateAsync(payload);
-
          onCreated?.({ id: created.id, name: created.name });
       }
+      await qc.invalidateQueries({ queryKey: [QUERY_KEYS.MY_ANIMALS] });
    };
 
    return (
-      <form className="flex flex-col gap-6" onSubmit={handleSubmit(onSubmit)}>
+      <form
+         id={id}
+         className="flex flex-col gap-6"
+         onSubmit={handleSubmit(onSubmit, (err) => console.log(err))}
+      >
          <Controller
             name="name"
             control={control}
@@ -185,18 +169,10 @@ export default function AnimalForm({ initial, animalId, onCreated, onSaved, onCa
                   <PhotoDropzone
                      files={(field.value as unknown as PhotoItem[]) ?? []}
                      onChange={handlePhotosChange}
+                     defaultValue={photos}
                   />
                )}
             />
-         </div>
-
-         <div className="flex justify-between">
-            <Button variant="bordered" onPress={onCancel}>
-               Voltar
-            </Button>
-            <Button color="primary" type="submit" isLoading={isSubmitting}>
-               Salvar animal
-            </Button>
          </div>
       </form>
    );
