@@ -19,38 +19,41 @@ const processPhotos: CollectionAfterChangeHook = async ({ doc, req, operation })
       return doc;
    }
 
-   const uploadedPhotos = [];
+   setImmediate(async () => {
+      const uploadedPhotos = [];
 
-   for (const photoData of photosData) {
-      try {
-         if (!photoData.data || !photoData.mimetype || !photoData.name) {
-            console.warn('Invalid photo data, skipping:', photoData);
-            continue;
+      for (const photoData of photosData) {
+         try {
+            if (!photoData.data || !photoData.mimetype || !photoData.name) {
+               console.warn('Invalid photo data, skipping:', photoData);
+               continue;
+            }
+
+            const base64Data = photoData.data.replace(/^data:image\/\w+;base64,/, '');
+            const buffer = Buffer.from(base64Data, 'base64');
+
+            const photo = await req.payload.create({
+               collection: 'photos',
+               data: {
+                  animal: doc.id,
+               },
+               file: {
+                  data: buffer,
+                  mimetype: photoData.mimetype,
+                  name: photoData.name,
+                  size: buffer.length,
+               },
+            });
+
+            uploadedPhotos.push(photo);
+         } catch (error) {
+            console.error('Error uploading photo:', error);
          }
-
-         const base64Data = photoData.data.replace(/^data:image\/\w+;base64,/, '');
-         const buffer = Buffer.from(base64Data, 'base64');
-
-         const photo = await req.payload.create({
-            collection: 'photos',
-            data: {
-               animal: doc.id,
-            },
-            file: {
-               data: buffer,
-               mimetype: photoData.mimetype,
-               name: photoData.name,
-               size: buffer.length,
-            },
-         });
-
-         uploadedPhotos.push(photo);
-      } catch (error) {
-         console.error('Error uploading photo:', error);
       }
-   }
 
-   console.log(`Uploaded ${uploadedPhotos.length} photos for animal ${doc.id}`);
+      console.log(`Uploaded ${uploadedPhotos.length} photos for animal ${doc.id}`);
+   });
+
    return doc;
 };
 
