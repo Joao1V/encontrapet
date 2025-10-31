@@ -12,11 +12,11 @@ import { getFieldErrorProps } from '@/lib/utils';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Controller, useForm } from 'react-hook-form';
 import { AnimalsSchema, type AnimalsType } from '../schema/animals.schema';
-import PhotoDropzone from './photo-dropzone';
+import PhotoDropzone, { type PhotoItem } from './photo-dropzone';
 
 type Props = {
    initial?: Partial<AnimalsType>;
-   animalId?: string;
+   animalId?: number;
    onCreated?: (animal: { id: string; name: string }) => void;
    onSaved?: (animal: { id: string; name: string }) => void;
    onCancel: () => void;
@@ -44,23 +44,22 @@ export default function AnimalForm({ initial, animalId, onCreated, onSaved, onCa
    const updateAnimal = useUpdateAnimal();
    const uploadPhotoAnimal = useUploadPhotoAnimal();
 
-   const handlePhotosChange = (updated: File[]) => {
-      setValue('photos', updated, { shouldValidate: true });
+   const handlePhotosChange = (updated: PhotoItem[]) => {
+      // Guarda no formato requerido: { data: Base64, mimetype: string, name: string }
+      console.log(updated);
+      setValue('photos' as any, updated as any, { shouldValidate: true });
    };
 
    const onSubmit = async (data: AnimalsType) => {
-      const { photos, ...payload } = data;
+      const payload = data;
       if (animalId) {
+         console.log('edit', { id: animalId, data: payload });
          const updated = await updateAnimal.mutateAsync({ id: animalId, data: payload });
-         if (photos?.length) {
-            await uploadPhotoAnimal.mutateAsync({ id: Number(updated.id), photos });
-         }
+
          onSaved?.({ id: updated.id, name: updated.name });
       } else {
          const created = await createAnimal.mutateAsync(payload);
-         if (photos?.length) {
-            await uploadPhotoAnimal.mutateAsync({ id: Number(created.id), photos });
-         }
+
          onCreated?.({ id: created.id, name: created.name });
       }
    };
@@ -183,7 +182,10 @@ export default function AnimalForm({ initial, animalId, onCreated, onSaved, onCa
                name="photos"
                control={control}
                render={({ field }) => (
-                  <PhotoDropzone files={field.value ?? []} onChange={handlePhotosChange} />
+                  <PhotoDropzone
+                     files={(field.value as unknown as PhotoItem[]) ?? []}
+                     onChange={handlePhotosChange}
+                  />
                )}
             />
          </div>
