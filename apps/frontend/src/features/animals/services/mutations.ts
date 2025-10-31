@@ -11,8 +11,8 @@ export function useCreateAnimal() {
 }
 export function useDeleteAnimal() {
    const qc = useQueryClient();
-   return useMutation<boolean, Error, string>({
-      mutationFn: async (id: string) => animalApi.deleteAnimal(id),
+   return useMutation<boolean, Error, number>({
+      mutationFn: async (id: number) => animalApi.deleteAnimal(id),
       onSuccess: () => {},
    });
 }
@@ -24,16 +24,5 @@ export function useUpdateAnimal() {
          return await animalApi.updateAnimal(vars.id, vars.data);
       },
       onSuccess: async () => {},
-   });
-}
-
-export function useUploadPhotoAnimal() {
-   const qc = useQueryClient();
-   return useMutation({
-      mutationFn: async (variables: { id: number; photos: AnimalsType['photos'] }) => {
-         const { id, photos } = variables;
-         await animalApi.uploadAnimalPhotos(id, photos);
-         return {};
-      },
    });
 }

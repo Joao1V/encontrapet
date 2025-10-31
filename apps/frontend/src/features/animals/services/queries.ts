@@ -8,10 +8,7 @@ export function useMyAnimalsQuery() {
 
    return useQuery({
       queryKey: [QUERY_KEYS.MY_ANIMALS],
-      queryFn: async () => {
-         console.log('mano?');
-         return await animalApi.listMyAnimals();
-      },
+      queryFn: animalApi.listMyAnimals,
       enabled: status === 'authenticated',
    });
 }
