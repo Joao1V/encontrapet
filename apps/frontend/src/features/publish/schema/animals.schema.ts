@@ -10,7 +10,7 @@ export const AnimalsSchema = z.object({
    has_collar: z.boolean(),
    gender: z.custom<GenderValue>(),
    notes: z.string(),
-   photos: z.any(),
+   photos: z.array(z.any()).optional(),
 });
 
 export type AnimalsType = z.infer<typeof AnimalsSchema>;
