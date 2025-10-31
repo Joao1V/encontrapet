@@ -165,7 +165,7 @@ export const Publications: CollectionConfig = {
                   collection: 'publications',
                   page,
                   limit,
-                  depth: 1,
+                  depth: 2,
                   sort: '-createdAt',
                });
 
@@ -270,7 +270,7 @@ export const Publications: CollectionConfig = {
                   where: finalWhere,
                   page,
                   limit,
-                  depth: 1,
+                  depth: 2,
                });
 
                const publicationsWithPhotos = await Promise.all(
@@ -493,7 +493,7 @@ export const Publications: CollectionConfig = {
                   },
                   page,
                   limit,
-                  depth: 1,
+                  depth: 2,
                   sort: '-createdAt',
                });
 
