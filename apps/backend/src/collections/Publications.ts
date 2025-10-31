@@ -171,7 +171,29 @@ export const Publications: CollectionConfig = {
                   depth: 1,
                });
 
-               return Response.json(publications);
+               const publicationsWithPhotos = await Promise.all(
+                  publications.docs.map(async (publication) => {
+                     const photos = await req.payload.find({
+                        collection: 'photos',
+                        where: {
+                           publication: {
+                              equals: publication.id,
+                           },
+                        },
+                        limit: 100,
+                     });
+
+                     return {
+                        ...publication,
+                        photos: photos.docs,
+                     };
+                  }),
+               );
+
+               return Response.json({
+                  ...publications,
+                  docs: publicationsWithPhotos,
+               });
             } catch (error) {
                console.error('Erro na busca:', error);
                return Response.json(
@@ -353,7 +375,29 @@ export const Publications: CollectionConfig = {
                   sort: '-createdAt',
                });
 
-               return Response.json(publications);
+               const publicationsWithPhotos = await Promise.all(
+                  publications.docs.map(async (publication) => {
+                     const photos = await req.payload.find({
+                        collection: 'photos',
+                        where: {
+                           publication: {
+                              equals: publication.id,
+                           },
+                        },
+                        limit: 100,
+                     });
+
+                     return {
+                        ...publication,
+                        photos: photos.docs,
+                     };
+                  }),
+               );
+
+               return Response.json({
+                  ...publications,
+                  docs: publicationsWithPhotos,
+               });
             } catch (error) {
                console.error('Erro ao buscar minhas publicações:', error);
                return Response.json(

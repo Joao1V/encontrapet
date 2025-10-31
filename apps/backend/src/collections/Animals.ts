@@ -89,7 +89,29 @@ export const Animals: CollectionConfig = {
                   sort: '-createdAt',
                });
 
-               return Response.json(animals);
+               const animalsWithPhotos = await Promise.all(
+                  animals.docs.map(async (animal) => {
+                     const photos = await req.payload.find({
+                        collection: 'photos',
+                        where: {
+                           animal: {
+                              equals: animal.id,
+                           },
+                        },
+                        limit: 100,
+                     });
+
+                     return {
+                        ...animal,
+                        photos: photos.docs,
+                     };
+                  }),
+               );
+
+               return Response.json({
+                  ...animals,
+                  docs: animalsWithPhotos,
+               });
             } catch (error) {
                console.error('Erro ao buscar meus animais:', error);
                return Response.json(
