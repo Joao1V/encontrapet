@@ -1,27 +1,24 @@
-import api from '@/lib/axios';
-import type { Animal as PayloadAnimal, Photo as PayloadPhoto } from '@payload-types';
+import api, { type PaginateResponse } from '@/lib/axios';
+import type { Animal as AnimalPayload, Photo as PayloadPhoto } from '@payload-types';
 
-export type Animal = {
+type Animal = {
    id: string;
    name: string;
-   species: PayloadAnimal['species'];
-   size?: PayloadAnimal['size'];
+   species: AnimalPayload['species'];
+   size?: AnimalPayload['size'];
    color?: string | null;
    has_collar?: boolean | null;
-   gender?: PayloadAnimal['gender'];
+   gender?: AnimalPayload['gender'];
    notes?: string | null;
+   photos?: PayloadPhoto;
 };
 
 export type CreateAnimalInput = Omit<Animal, 'id'>;
 export type UpdateAnimalInput = Partial<CreateAnimalInput>;
 
 class AnimalServices {
-   async listMyAnimals(userId: string): Promise<Animal[]> {
-      const res = await api.get<{ docs: Animal[] }>(`/animals`, {
-         limit: 0,
-         where: { user: { equals: userId } },
-      });
-      return res?.docs ?? [];
+   async listMyAnimals() {
+      return await api.get<PaginateResponse<AnimalPayload[]>>(`/animals/me`);
    }
 
    async createAnimal(data: CreateAnimalInput): Promise<Animal> {
@@ -33,11 +30,12 @@ class AnimalServices {
          has_collar: data.has_collar ?? false,
          gender: data.gender,
          notes: data.notes,
+         photos: data.photos,
       };
       return await api.post<Animal, typeof payload>(`/animals`, payload);
    }
 
-   async updateAnimal(id: string, data: UpdateAnimalInput): Promise<Animal> {
+   async updateAnimal(id: number, data: UpdateAnimalInput): Promise<Animal> {
       const payload = {
          name: data.name,
          species: data.species,
@@ -46,8 +44,9 @@ class AnimalServices {
          has_collar: data.has_collar,
          gender: data.gender,
          notes: data.notes,
+         photos: data.photos,
       };
-      return await api.post<Animal, typeof payload>(`/animals/${id}`, payload);
+      return await api.patch<Animal, typeof payload>(`/animals/${id}`, payload);
    }
 
    async deleteAnimal(id: string): Promise<boolean> {
@@ -60,16 +59,10 @@ class AnimalServices {
    }
 
    // Photos
-   async uploadAnimalPhotos(animalId: number, files: File[]): Promise<PayloadPhoto[]> {
-      const uploaded: PayloadPhoto[] = [];
-      for (const file of files) {
-         const fd = new FormData();
-         fd.append('image', file);
-         fd.append('animal', animalId);
-         const res = await api.post<PayloadPhoto, FormData>(`/photos`, fd);
-         uploaded.push(res);
-      }
-      return uploaded;
+   async uploadAnimalPhotos(animalId: number, payload: any[]) {
+      const res = await api.post<PayloadPhoto>(`/photos`, payload);
+
+      return res;
    }
 }
 
