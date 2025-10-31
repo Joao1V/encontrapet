@@ -8,9 +8,12 @@ import type {
    User as PayloadUser,
 } from '@payload-types';
 
+type Animal = PayloadAnimal & {
+   photos?: PayloadPhoto[];
+};
 // Types for Publications (reuse unions for type/status)
 export type Publication = Omit<PayloadPublication, 'animal' | 'user' | 'location'> & {
-   animal: PayloadAnimal;
+   animal: Animal;
    user: PayloadUser;
    location: PayloadLocation;
    photos?: PayloadPhoto;
