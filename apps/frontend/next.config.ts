@@ -1,9 +1,19 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-   /* config options here */
    devIndicators: false,
+   reactStrictMode: false,
    transpilePackages: ['@encontra-pet/utils'],
+   images: {
+      remotePatterns: [
+         {
+            protocol: 'http',
+            hostname: 'localhost',
+            port: '3001',
+            pathname: '/**',
+         },
+      ],
+   },
 };
 
 export default nextConfig;
