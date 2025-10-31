@@ -212,9 +212,29 @@ export const Publications: CollectionConfig = {
                         limit: 100,
                      });
 
+                     let animalPhotos: any[] = [];
+                     if (publication.animal && typeof publication.animal === 'object' && publication.animal.id) {
+                        const animalPhotosResult = await req.payload.find({
+                           collection: 'photos',
+                           where: {
+                              animal: {
+                                 equals: publication.animal.id,
+                              },
+                           },
+                           limit: 100,
+                        });
+                        animalPhotos = animalPhotosResult.docs;
+                     }
+
                      return {
                         ...publication,
                         photos: photos.docs,
+                        animal: publication.animal && typeof publication.animal === 'object'
+                           ? {
+                              ...publication.animal,
+                              photos: animalPhotos,
+                           }
+                           : publication.animal,
                      };
                   }),
                );
@@ -416,9 +436,29 @@ export const Publications: CollectionConfig = {
                         limit: 100,
                      });
 
+                     let animalPhotos: any[] = [];
+                     if (publication.animal && typeof publication.animal === 'object' && publication.animal.id) {
+                        const animalPhotosResult = await req.payload.find({
+                           collection: 'photos',
+                           where: {
+                              animal: {
+                                 equals: publication.animal.id,
+                              },
+                           },
+                           limit: 100,
+                        });
+                        animalPhotos = animalPhotosResult.docs;
+                     }
+
                      return {
                         ...publication,
                         photos: photos.docs,
+                        animal: publication.animal && typeof publication.animal === 'object'
+                           ? {
+                              ...publication.animal,
+                              photos: animalPhotos,
+                           }
+                           : publication.animal,
                      };
                   }),
                );
