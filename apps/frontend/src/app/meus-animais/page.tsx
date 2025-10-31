@@ -1,21 +1,10 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
-import {
-   Button,
-   Card,
-   Modal,
-   ModalBody,
-   ModalContent,
-   ModalHeader,
-   Spinner,
-   useDisclosure,
-} from '@heroui/react';
+import { useState } from 'react';
+import { Button, Card, Spinner, useDisclosure } from '@heroui/react';
 
 import { ModalEditAnimal } from '@/features/animals/modal';
 import { useDeleteAnimal, useMyAnimalsQuery } from '@/features/animals/services';
-import AnimalForm from '@/features/publish/components/animal-form';
-import type { AnimalsType } from '@/features/publish/schema/animals.schema';
 import type { Animal as AnimalPayload } from '@payload-types';
 import { Edit3, Plus, Trash2 } from 'lucide-react';
 
@@ -33,8 +22,8 @@ export default function MyAnimalsPage() {
       onOpen();
    };
 
-   const handleEdit = () => {
-      // setEditing(animal);
+   const handleEdit = (animal: AnimalPayload) => {
+      setEditing(animal);
       onOpen();
    };
 
@@ -74,30 +63,30 @@ export default function MyAnimalsPage() {
             </div>
 
             {error && <p className="py-4 text-center text-danger">{error.message}</p>}
-            {!isLoading && !error && (
+            {!isLoading && !error && animals?.docs.length === 0 && (
                <p className="text-center text-default-500">
                   Você ainda não cadastrou nenhum animal.
                </p>
             )}
 
-            {animals && animals.length === 0 && (
+            {animals && animals?.docs.length > 0 && (
                <div className="flex flex-col gap-4">
-                  {animals.map((a) => (
-                     <Card key={a.id} className="p-4">
+                  {animals.docs.map((animal) => (
+                     <Card key={animal.id} className="p-4">
                         <div className="flex items-center justify-between">
                            <div>
-                              <p className="font-semibold">{a.name}</p>
+                              <p className="font-semibold">{animal.name}</p>
                               <p className="text-default-500 text-sm capitalize">
-                                 {a.species}
-                                 {a.size ? ` • ${a.size}` : ''}
-                                 {a.color ? ` • ${a.color}` : ''}
+                                 {animal.species}
+                                 {animal.size ? ` • ${animal.size}` : ''}
+                                 {animal.color ? ` • ${animal.color}` : ''}
                               </p>
                            </div>
                            <div className="flex gap-2">
                               <Button
                                  size="sm"
                                  variant="flat"
-                                 onPress={() => handleEdit()}
+                                 onPress={() => handleEdit(animal)}
                                  startContent={<Edit3 className="h-4 w-4" />}
                               >
                                  Editar
@@ -117,7 +106,11 @@ export default function MyAnimalsPage() {
                   ))}
                </div>
             )}
-            {/*<ModalEditAnimal />*/}
+            <ModalEditAnimal
+               {...disclosureEditAnimal}
+               defaultValue={editing}
+               isEditing={!!editing}
+            />
          </div>
       </div>
    );
