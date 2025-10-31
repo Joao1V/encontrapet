@@ -1,6 +1,7 @@
 import type {
    CollectionAfterChangeHook,
    CollectionBeforeChangeHook,
+   CollectionBeforeDeleteHook,
    CollectionConfig,
 } from 'payload';
 
@@ -55,6 +56,31 @@ const processPhotos: CollectionAfterChangeHook = async ({ doc, req, operation })
    });
 
    return doc;
+};
+
+const deletePhotos: CollectionBeforeDeleteHook = async ({ req, id }) => {
+   const photos = await req.payload.find({
+      collection: 'photos',
+      where: {
+         animal: {
+            equals: id,
+         },
+      },
+      limit: 1000,
+   });
+
+   for (const photo of photos.docs) {
+      try {
+         await req.payload.delete({
+            collection: 'photos',
+            id: photo.id,
+         });
+      } catch (error) {
+         console.error(`Error deleting photo ${photo.id}:`, error);
+      }
+   }
+
+   console.log(`Deleted ${photos.docs.length} photos for animal ${id}`);
 };
 
 export const Animals: CollectionConfig = {
@@ -231,6 +257,7 @@ export const Animals: CollectionConfig = {
    hooks: {
       beforeChange: [addUserToAnimal],
       afterChange: [processPhotos],
+      beforeDelete: [deletePhotos],
    },
    fields: [
       {
