@@ -1,6 +1,4 @@
 {
-  "version": 2,
-  "buildCommand": "cd ../.. && turbo run build --filter=backend",
-  "installCommand": "cd ../.. && pnpm install",
-  "framework": "nextjs"
+  "buildCommand": "cd ../.. && pnpm turbo run build --filter=encontrapet-cms",
+  "installCommand": "cd ../.. && pnpm install"
 }
