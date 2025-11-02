@@ -1,0 +1,66 @@
+{
+   "$schema": "https://turborepo.com/schema.json",
+   "cacheDir": ".turbo/cache",
+   "globalDependencies": [
+      "**/.env.*local",
+      "biome.json",
+      "tsconfig.json"
+   ],
+   "tasks": {
+      "build": {
+         "dependsOn": ["^build"],
+         "outputs": [".next/**", "!.next/cache/**", "dist/**"],
+         "env": [
+            "NODE_ENV",
+            "DATABASE_URI",
+            "PAYLOAD_SECRET",
+            "NEXT_PUBLIC_*",
+            "AWS_*"
+         ]
+      },
+      "dev": {
+         "dependsOn": ["^build"],
+         "persistent": true,
+         "cache": false,
+         "env": [
+            "NODE_ENV",
+            "DATABASE_URI",
+            "PAYLOAD_SECRET",
+            "NEXT_PUBLIC_*",
+            "AWS_*"
+         ]
+      },
+      "start": {
+         "dependsOn": ["build"],
+         "persistent": true,
+         "cache": false
+      },
+      "check-types": {
+         "dependsOn": ["^build"],
+         "outputs": []
+      },
+      "lint": {
+         "dependsOn": ["^build"],
+         "outputs": []
+      },
+      "format": {
+         "outputs": [],
+         "cache": false
+      },
+      "test": {
+         "dependsOn": ["^build"],
+         "outputs": ["coverage/**"]
+      },
+      "test:e2e": {
+         "dependsOn": ["^build"],
+         "outputs": ["playwright-report/**", "test-results/**"]
+      },
+      "test:int": {
+         "dependsOn": ["^build"],
+         "outputs": ["coverage/**"]
+      },
+      "clean": {
+         "cache": false
+      }
+   }
+}

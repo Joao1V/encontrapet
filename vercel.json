@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "pnpm build:frontend",
+  "buildCommand": "turbo run build --filter=frontend",
   "outputDirectory": "apps/frontend/.next",
   "installCommand": "pnpm install",
   "framework": "nextjs",
@@ -8,12 +8,6 @@
     {
       "src": "apps/frontend/package.json",
       "use": "@vercel/next"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "apps/frontend/$1"
     }
   ]
 }

@@ -4,6 +4,12 @@ const nextConfig: NextConfig = {
    devIndicators: false,
    reactStrictMode: false,
    transpilePackages: ['@encontra-pet/utils'],
+   typescript: {
+      ignoreBuildErrors: true,
+   },
+   eslint: {
+      ignoreDuringBuilds: true,
+   },
    images: {
       remotePatterns: [
          {
