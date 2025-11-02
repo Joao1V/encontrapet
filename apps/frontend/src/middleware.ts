@@ -27,5 +27,5 @@ const middleware = withAuth(
 export default middleware;
 
 export const config = {
-   matcher: [...PROTECTED_ROUTES, '/login'],
+   matcher: ['/nova-publicacao/:path*', '/meus-animais/:path*', '/painel/:path*', '/login'],
 };
