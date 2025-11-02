@@ -10,9 +10,7 @@ export const AnimalsSchema = z.object({
    has_collar: z.boolean(),
    gender: z.custom<GenderValue>(),
    notes: z.string(),
-   photos: z
-      .array(z.instanceof(File, { message: 'Arquivo inválido' }))
-      .max(3, 'Você pode selecionar no máximo 3 fotos'),
+   photos: z.array(z.any()).optional(),
 });
 
 export type AnimalsType = z.infer<typeof AnimalsSchema>;

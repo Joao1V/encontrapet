@@ -1,11 +1,11 @@
 'use client';
-import { useEffect, useState } from 'react';
-import { Button, Card, CardBody, CardHeader, Chip, Skeleton } from '@heroui/react';
+import { useState } from 'react';
+import { Button, Card, CardBody, CardHeader, Chip, Skeleton, useDisclosure } from '@heroui/react';
 import { LABEL_BY_VALUE } from '@encontra-pet/utils';
 
+import { ModalEditAnimal } from '@/features/animals/modal';
+import { useMyAnimalsQuery } from '@/features/animals/services';
 import { ArrowLeft } from 'lucide-react';
-import { useAnimals } from '../services/queries';
-import AnimalForm from './animal-form';
 import AnimalPicker from './animal-picker';
 import PublicationForm from './publication-form';
 import StepType from './step-type';
@@ -15,21 +15,10 @@ export type WizardStep = 1 | 2 | 3;
 export default function Wizard() {
    const [step, setStep] = useState<WizardStep>(1);
    const [type, setType] = useState<'lost' | 'found' | undefined>(undefined);
-   const [animalId, setAnimalId] = useState<string | undefined>(undefined);
-   const [mode, setMode] = useState<'pick' | 'create'>('pick');
+   const [animalId, setAnimalId] = useState<number | undefined>(undefined);
 
-   const { data: animals, isLoading } = useAnimals({ enabled: step >= 2 });
-
-   useEffect(() => {
-      if (step === 2 && !isLoading) {
-         const count = animals?.length ?? 0;
-         if (count === 0 && mode !== 'create') {
-            setMode('create');
-         }
-      }
-   }, [step, isLoading, animals, mode]);
-
-   const canContinueToPublication = !!animalId;
+   const { data: animals, isLoading } = useMyAnimalsQuery();
+   const disclosureCreateAnimal = useDisclosure();
 
    const handleTypeChosen = (t: 'lost' | 'found') => {
       setType(t);
@@ -41,14 +30,8 @@ export default function Wizard() {
       }
    };
 
-   const handleAnimalSelected = (id: string) => {
+   const handleAnimalSelected = (id: number) => {
       setAnimalId(id);
-      setStep(3);
-   };
-
-   const handleAnimalCreated = (animal: { id: string; name: string }) => {
-      setAnimalId(animal.id);
-      setMode('pick');
       setStep(3);
    };
 
@@ -79,7 +62,7 @@ export default function Wizard() {
                   <div className={'ml-4'}>
                      <h1 className="font-bold text-2xl">Nova Publicação</h1>
                      <p className="text-default-500 text-sm">
-                        {step === 1 && 'Deseja publicar um animal:'}
+                        {step === 1 && 'Deseja publicar:'}
                         {step === 2 && 'Selecione um animal cadastrado ou cadastre um novo'}
                         {step === 3 && 'Detalhes da publicação'}
                      </p>
@@ -91,47 +74,41 @@ export default function Wizard() {
 
                {step === 2 && (
                   <div className="flex flex-col gap-6">
-                     {mode === 'pick' ? (
-                        <>
-                           {isLoading ? (
-                              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                                 <Skeleton className="h-24 rounded-sm" />
-                                 <Skeleton className="h-24 rounded-sm" />
-                              </div>
-                           ) : (
-                              <>
-                                 <AnimalPicker
-                                    animals={animals}
-                                    loading={isLoading}
-                                    selectedId={animalId}
-                                    onSelect={handleAnimalSelected}
-                                 />
-                                 <div className="flex justify-between">
-                                    <Button variant="bordered" onPress={() => setStep(1)}>
-                                       Voltar
+                     <>
+                        {isLoading ? (
+                           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                              <Skeleton className="h-24 rounded-sm" />
+                              <Skeleton className="h-24 rounded-sm" />
+                           </div>
+                        ) : (
+                           <>
+                              <AnimalPicker
+                                 animals={animals?.docs || null}
+                                 loading={isLoading}
+                                 selectedId={animalId}
+                                 onSelect={handleAnimalSelected}
+                              />
+                              <div className="flex justify-between">
+                                 <Button variant="bordered" onPress={() => setStep(1)}>
+                                    Voltar
+                                 </Button>
+                                 <div className="flex gap-3">
+                                    <Button
+                                       onPress={() => disclosureCreateAnimal.onOpen()}
+                                       color={'success'}
+                                    >
+                                       Cadastrar novo animal
                                     </Button>
-                                    <div className="flex gap-3">
-                                       <Button onPress={() => setMode('create')}>
-                                          Cadastrar novo animal
-                                       </Button>
-                                       <Button
-                                          color="primary"
-                                          isDisabled={!canContinueToPublication}
-                                          onPress={() => animalId && setStep(3)}
-                                       >
-                                          Continuar
-                                       </Button>
-                                    </div>
                                  </div>
-                              </>
-                           )}
-                        </>
-                     ) : (
-                        <AnimalForm
-                           onCreated={handleAnimalCreated}
-                           onCancel={() => setMode('pick')}
-                        />
-                     )}
+                                 <ModalEditAnimal
+                                    {...disclosureCreateAnimal}
+                                    isEditing={false}
+                                    defaultValue={null}
+                                 />
+                              </div>
+                           </>
+                        )}
+                     </>
                   </div>
                )}
 
@@ -141,7 +118,7 @@ export default function Wizard() {
                      {animalId &&
                         animals &&
                         (() => {
-                           const a = animals.find((x) => x.id === animalId);
+                           const a = animals.docs.find((x) => x.id === animalId);
                            if (!a) return null;
                            return (
                               <div className="relative overflow-hidden rounded-large border bg-content1 p-4">

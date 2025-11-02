@@ -8,45 +8,24 @@ import type {
    User as PayloadUser,
 } from '@payload-types';
 
-// Types for Animals (frontend-friendly ids, reuse enums from payload types)
-export type Animal = {
-   id: string;
-   name: string;
-   species: PayloadAnimal['species'];
-   size?: PayloadAnimal['size'];
-   color?: string | null;
-   has_collar?: boolean | null;
-   gender?: PayloadAnimal['gender'];
-   notes?: string | null;
+type Animal = PayloadAnimal & {
+   photos?: PayloadPhoto[];
 };
-
 // Types for Publications (reuse unions for type/status)
 export type Publication = Omit<PayloadPublication, 'animal' | 'user' | 'location'> & {
-   animal: PayloadAnimal;
+   animal: Animal;
    user: PayloadUser;
    location: PayloadLocation;
    photos?: PayloadPhoto;
 };
 
 class PublishServices {
-   async listAnimals(): Promise<Animal[]> {
-      try {
-         const res = await api.get<{ docs: Animal[] }>(`/animals`, { limit: 0 });
-         return res?.docs ?? [];
-      } catch {
-         return [];
-      }
-   }
-
    async listPosts() {
       return await api.get<PaginateResponse<Publication[]>>(`/publications`, { limit: 0 });
    }
 
-   async listMyPosts(userId: string) {
-      return await api.get<PaginateResponse<Publication[]>>(`/publications`, {
-         limit: 0,
-         where: { user: { equals: userId } },
-      } as any);
+   async listMyPosts() {
+      return await api.get<PaginateResponse<Publication[]>>(`/publications/me`);
    }
 
    // Publications

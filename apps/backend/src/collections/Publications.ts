@@ -1,4 +1,11 @@
-import type { Access, CollectionAfterChangeHook, CollectionAfterReadHook, CollectionBeforeChangeHook, CollectionConfig } from 'payload';
+import type {
+   Access,
+   CollectionAfterChangeHook,
+   CollectionAfterReadHook,
+   CollectionBeforeChangeHook,
+   CollectionBeforeDeleteHook,
+   CollectionConfig,
+} from 'payload';
 
 const addUserToPublication: CollectionBeforeChangeHook = ({ req, data }) => {
    if (!req.user) {
@@ -78,44 +85,145 @@ const processPhotos: CollectionAfterChangeHook = async ({ doc, req, operation })
       return doc;
    }
 
-   const uploadedPhotos = [];
+   setImmediate(async () => {
+      const uploadedPhotos = [];
 
-   for (const photoData of photosData) {
-      try {
-         if (!photoData.data || !photoData.mimetype || !photoData.name) {
-            console.warn('Invalid photo data, skipping:', photoData);
-            continue;
+      for (const photoData of photosData) {
+         try {
+            if (!photoData.data || !photoData.mimetype || !photoData.name) {
+               console.warn('Invalid photo data, skipping:', photoData);
+               continue;
+            }
+
+            const base64Data = photoData.data.replace(/^data:image\/\w+;base64,/, '');
+            const buffer = Buffer.from(base64Data, 'base64');
+
+            const photo = await req.payload.create({
+               collection: 'photos',
+               data: {
+                  publication: doc.id,
+               },
+               file: {
+                  data: buffer,
+                  mimetype: photoData.mimetype,
+                  name: photoData.name,
+                  size: buffer.length,
+               },
+            });
+
+            uploadedPhotos.push(photo);
+         } catch (error) {
+            console.error('Error uploading photo:', error);
          }
+      }
 
-         const base64Data = photoData.data.replace(/^data:image\/\w+;base64,/, '');
-         const buffer = Buffer.from(base64Data, 'base64');
+      console.log(`Uploaded ${uploadedPhotos.length} photos for publication ${doc.id}`);
+   });
 
-         const photo = await req.payload.create({
+   return doc;
+};
+
+const deletePhotos: CollectionBeforeDeleteHook = async ({ req, id }) => {
+   const photos = await req.payload.find({
+      collection: 'photos',
+      where: {
+         publication: {
+            equals: id,
+         },
+      },
+      limit: 1000,
+   });
+
+   for (const photo of photos.docs) {
+      try {
+         await req.payload.delete({
             collection: 'photos',
-            data: {
-               publication: doc.id,
-            },
-            file: {
-               data: buffer,
-               mimetype: photoData.mimetype,
-               name: photoData.name,
-               size: buffer.length,
-            },
+            id: photo.id,
          });
-
-         uploadedPhotos.push(photo);
       } catch (error) {
-         console.error('Error uploading photo:', error);
+         console.error(`Error deleting photo ${photo.id}:`, error);
       }
    }
 
-   console.log(`Uploaded ${uploadedPhotos.length} photos for publication ${doc.id}`);
-   return doc;
+   console.log(`Deleted ${photos.docs.length} photos for publication ${id}`);
 };
 
 export const Publications: CollectionConfig = {
    slug: 'publications',
    endpoints: [
+      {
+         path: '/',
+         method: 'get',
+         handler: async (req) => {
+            try {
+               const url = req.url || '';
+               const { searchParams } = new URL(url, `http://localhost`);
+               const page = Number(searchParams.get('page')) || 1;
+               const limit = Number(searchParams.get('limit')) || 10;
+
+               const publications = await req.payload.find({
+                  collection: 'publications',
+                  page,
+                  limit,
+                  depth: 2,
+                  sort: '-createdAt',
+               });
+
+               const publicationsWithPhotos = await Promise.all(
+                  publications.docs.map(async (publication) => {
+                     const photos = await req.payload.find({
+                        collection: 'photos',
+                        where: {
+                           publication: {
+                              equals: publication.id,
+                           },
+                        },
+                        limit: 100,
+                     });
+
+                     let animalPhotos: any[] = [];
+                     if (publication.animal && typeof publication.animal === 'object' && publication.animal.id) {
+                        const animalPhotosResult = await req.payload.find({
+                           collection: 'photos',
+                           where: {
+                              animal: {
+                                 equals: publication.animal.id,
+                              },
+                           },
+                           limit: 100,
+                        });
+                        animalPhotos = animalPhotosResult.docs;
+                     }
+
+                     return {
+                        ...publication,
+                        photos: photos.docs,
+                        animal: publication.animal && typeof publication.animal === 'object'
+                           ? {
+                              ...publication.animal,
+                              photos: animalPhotos,
+                           }
+                           : publication.animal,
+                     };
+                  }),
+               );
+
+               return Response.json({
+                  ...publications,
+                  docs: publicationsWithPhotos,
+               });
+            } catch (error) {
+               console.error('Erro ao listar publicações:', error);
+               return Response.json(
+                  {
+                     success: false,
+                     error: 'Erro ao listar publicações',
+                  },
+                  { status: 500 },
+               );
+            }
+         },
+      },
       {
          path: '/search',
          method: 'get',
@@ -143,7 +251,7 @@ export const Publications: CollectionConfig = {
                      limit: 1000,
                   });
 
-                  const locationIds = locations.docs.map(loc => loc.id);
+                  const locationIds = locations.docs.map((loc) => loc.id);
                   if (locationIds.length > 0) {
                      where.and.push({ location: { in: locationIds } });
                   }
@@ -151,10 +259,7 @@ export const Publications: CollectionConfig = {
 
                if (text) {
                   where.and.push({
-                     or: [
-                        { title: { contains: text } },
-                        { description: { contains: text } },
-                     ],
+                     or: [{ title: { contains: text } }, { description: { contains: text } }],
                   });
                }
 
@@ -165,21 +270,67 @@ export const Publications: CollectionConfig = {
                   where: finalWhere,
                   page,
                   limit,
-                  depth: 1,
+                  depth: 2,
                });
 
-               return Response.json(publications);
+               const publicationsWithPhotos = await Promise.all(
+                  publications.docs.map(async (publication) => {
+                     const photos = await req.payload.find({
+                        collection: 'photos',
+                        where: {
+                           publication: {
+                              equals: publication.id,
+                           },
+                        },
+                        limit: 100,
+                     });
+
+                     let animalPhotos: any[] = [];
+                     if (publication.animal && typeof publication.animal === 'object' && publication.animal.id) {
+                        const animalPhotosResult = await req.payload.find({
+                           collection: 'photos',
+                           where: {
+                              animal: {
+                                 equals: publication.animal.id,
+                              },
+                           },
+                           limit: 100,
+                        });
+                        animalPhotos = animalPhotosResult.docs;
+                     }
+
+                     return {
+                        ...publication,
+                        photos: photos.docs,
+                        animal: publication.animal && typeof publication.animal === 'object'
+                           ? {
+                              ...publication.animal,
+                              photos: animalPhotos,
+                           }
+                           : publication.animal,
+                     };
+                  }),
+               );
+
+               return Response.json({
+                  ...publications,
+                  docs: publicationsWithPhotos,
+               });
             } catch (error) {
                console.error('Erro na busca:', error);
-               return Response.json({
-                  success: false,
-                  error: 'Erro ao buscar publicações',
-               }, { status: 500 });
+               return Response.json(
+                  {
+                     success: false,
+                     error: 'Erro ao buscar publicações',
+                  },
+                  { status: 500 },
+               );
             }
          },
          openapi: {
             summary: 'Busca avançada de publicações',
-            description: 'Busca publicações com filtros combinados por tipo, bairro e texto. Retorna resultados paginados com dados de relacionamentos populados (animal, location, user).',
+            description:
+               'Busca publicações com filtros combinados por tipo, bairro e texto. Retorna resultados paginados com dados de relacionamentos populados (animal, location, user).',
             tags: ['Publications'],
             parameters: [
                {
@@ -248,7 +399,8 @@ export const Publications: CollectionConfig = {
                                  type: 'array',
                                  items: {
                                     type: 'object',
-                                    description: 'Objeto da publicação com relacionamentos populados',
+                                    description:
+                                       'Objeto da publicação com relacionamentos populados',
                                  },
                               },
                               totalDocs: {
@@ -313,15 +465,18 @@ export const Publications: CollectionConfig = {
          },
       },
       {
-         path: '/my-publications',
+         path: '/me',
          method: 'get',
          handler: async (req) => {
             try {
                if (!req.user) {
-                  return Response.json({
-                     success: false,
-                     error: 'Unauthorized',
-                  }, { status: 401 });
+                  return Response.json(
+                     {
+                        success: false,
+                        error: 'Unauthorized',
+                     },
+                     { status: 401 },
+                  );
                }
 
                const url = req.url || '';
@@ -338,22 +493,68 @@ export const Publications: CollectionConfig = {
                   },
                   page,
                   limit,
-                  depth: 1,
+                  depth: 2,
                   sort: '-createdAt',
                });
 
-               return Response.json(publications);
+               const publicationsWithPhotos = await Promise.all(
+                  publications.docs.map(async (publication) => {
+                     const photos = await req.payload.find({
+                        collection: 'photos',
+                        where: {
+                           publication: {
+                              equals: publication.id,
+                           },
+                        },
+                        limit: 100,
+                     });
+
+                     let animalPhotos: any[] = [];
+                     if (publication.animal && typeof publication.animal === 'object' && publication.animal.id) {
+                        const animalPhotosResult = await req.payload.find({
+                           collection: 'photos',
+                           where: {
+                              animal: {
+                                 equals: publication.animal.id,
+                              },
+                           },
+                           limit: 100,
+                        });
+                        animalPhotos = animalPhotosResult.docs;
+                     }
+
+                     return {
+                        ...publication,
+                        photos: photos.docs,
+                        animal: publication.animal && typeof publication.animal === 'object'
+                           ? {
+                              ...publication.animal,
+                              photos: animalPhotos,
+                           }
+                           : publication.animal,
+                     };
+                  }),
+               );
+
+               return Response.json({
+                  ...publications,
+                  docs: publicationsWithPhotos,
+               });
             } catch (error) {
                console.error('Erro ao buscar minhas publicações:', error);
-               return Response.json({
-                  success: false,
-                  error: 'Erro ao buscar publicações',
-               }, { status: 500 });
+               return Response.json(
+                  {
+                     success: false,
+                     error: 'Erro ao buscar publicações',
+                  },
+                  { status: 500 },
+               );
             }
          },
          openapi: {
             summary: 'Lista publicações do usuário autenticado',
-            description: 'Retorna apenas as publicações criadas pelo usuário logado, ordenadas por data de criação (mais recentes primeiro). Requer autenticação via Bearer token.',
+            description:
+               'Retorna apenas as publicações criadas pelo usuário logado, ordenadas por data de criação (mais recentes primeiro). Requer autenticação via Bearer token.',
             tags: ['Publications'],
             parameters: [
                {
@@ -516,36 +717,11 @@ export const Publications: CollectionConfig = {
          type: 'date',
          label: 'Data de Desaparecimento/Encontro',
       },
-      {
-         name: 'photos',
-         type: 'array',
-         label: 'Fotos (Base64)',
-         admin: {
-            hidden: true,
-            description: 'Array de objetos com data (base64), mimetype e name',
-         },
-         fields: [
-            {
-               name: 'data',
-               type: 'textarea',
-               required: true,
-            },
-            {
-               name: 'mimetype',
-               type: 'text',
-               required: true,
-            },
-            {
-               name: 'name',
-               type: 'text',
-               required: true,
-            },
-         ],
-      },
    ],
    hooks: {
       beforeChange: [logIncomingData, createLocationFromData, addUserToPublication],
       afterChange: [processPhotos],
       afterRead: [addRelationshipIds],
+      beforeDelete: [deletePhotos],
    },
 };

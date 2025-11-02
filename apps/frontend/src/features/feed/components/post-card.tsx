@@ -15,7 +15,7 @@ export function PostCard(props: PostCardProps) {
    const animal = typeof props.animal === 'object' ? props.animal : null;
    const user = typeof props.user === 'object' ? props.user : null;
    const location = typeof props.location === 'object' ? props.location : null;
-   const images = props.photos?.map((photo) => photo.url || '').filter(Boolean) || [];
+   const images = props.animal.photos?.map((photo) => photo.url || '').filter(Boolean) || [];
 
    const normalizePhone = (phone: string) => phone.replace(/[^0-9]/g, '');
 

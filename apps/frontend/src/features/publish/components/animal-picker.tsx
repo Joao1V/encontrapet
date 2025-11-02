@@ -1,46 +1,37 @@
 'use client';
 import { useState } from 'react';
-import {
-   Button,
-   Card,
-   CardBody,
-   CardHeader,
-   Modal,
-   ModalBody,
-   ModalContent,
-   ModalHeader,
-   Tooltip,
-} from '@heroui/react';
+import { Button, Card, CardBody, CardHeader, Tooltip, useDisclosure } from '@heroui/react';
 import { LABEL_BY_VALUE } from '@encontra-pet/utils';
 
+import { QUERY_KEYS } from '@/config/constants';
+import { ModalEditAnimal } from '@/features/animals/modal';
+import type { Animal } from '@/features/animals/services';
 import { useDeleteAnimal } from '@/features/animals/services';
 import { useQueryClient } from '@tanstack/react-query';
 import { PawPrint, Pencil, Trash2 } from 'lucide-react';
-import type { Animal } from '../services/api';
-import AnimalForm from './animal-form';
 
 type Props = {
    animals?: Animal[] | null;
    loading?: boolean;
-   selectedId?: string;
-   onSelect(id: string): void;
+   selectedId?: number;
+   onSelect(id: number): void;
 };
 
 export default function AnimalPicker({ animals, loading, selectedId, onSelect }: Props) {
    const empty = !loading && (animals?.length ?? 0) === 0;
-   const [deletingId, setDeletingId] = useState<string | null>(null);
    const [editing, setEditing] = useState<Animal | null>(null);
    const deleteMutation = useDeleteAnimal();
+   const disclosureCreateAnimal = useDisclosure();
+
    const qc = useQueryClient();
 
-   const handleDeleteClick = async (id: string, name?: string) => {
+   const handleDeleteClick = async (id: number, name?: string) => {
       const ok = window.confirm(`Tem certeza que deseja excluir${name ? ` "${name}"` : ''}?`);
       if (!ok) return;
       try {
-         setDeletingId(id);
          await deleteMutation.mutateAsync(id);
+         await qc.invalidateQueries({ queryKey: [QUERY_KEYS.MY_ANIMALS] });
       } finally {
-         setDeletingId(null);
       }
    };
 
@@ -53,19 +44,16 @@ export default function AnimalPicker({ animals, loading, selectedId, onSelect }:
       <div className="flex flex-col gap-6">
          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {animals?.map((a) => {
-               const selected = selectedId === a.id;
                const isDeleting =
-                  deletingId === a.id || (deleteMutation.isPending && deletingId === a.id);
+                  deleteMutation.variables === a.id ||
+                  (deleteMutation.isPending && deleteMutation.variables === a.id);
                return (
                   <Card
                      key={a.id}
                      isPressable
                      as={'div'}
                      onPress={() => !isDeleting && onSelect(a.id)}
-                     className={
-                        (selected ? 'border-2 border-primary' : '') +
-                        'relative transition-shadow hover:shadow-md'
-                     }
+                     className={'relative transition-shadow hover:shadow-md'}
                   >
                      <div className="absolute top-2 right-2 z-20 flex gap-1">
                         <Tooltip
@@ -79,7 +67,10 @@ export default function AnimalPicker({ animals, loading, selectedId, onSelect }:
                               isIconOnly
                               size="sm"
                               variant="light"
-                              onPress={() => setEditing(a)}
+                              onPress={() => {
+                                 setEditing(a);
+                                 disclosureCreateAnimal.onOpen();
+                              }}
                               isDisabled={isDeleting}
                            >
                               <Pencil className="h-4 w-4" />
@@ -96,8 +87,7 @@ export default function AnimalPicker({ animals, loading, selectedId, onSelect }:
                               isIconOnly
                               size="sm"
                               variant="light"
-                              onPress={(ev) => handleDeleteClick(a.id, a.name)}
-                              isDisabled={isDeleting}
+                              onPress={() => handleDeleteClick(a.id, a.name)}
                               isLoading={isDeleting}
                            >
                               <Trash2 className="h-4 w-4 text-danger" />
@@ -124,34 +114,23 @@ export default function AnimalPicker({ animals, loading, selectedId, onSelect }:
             })}
          </div>
 
-         <Modal isOpen={!!editing} onOpenChange={() => setEditing(null)}>
-            <ModalContent>
-               {() => (
-                  <>
-                     <ModalHeader>Editar animal</ModalHeader>
-                     <ModalBody>
-                        {editing ? (
-                           <AnimalForm
-                              animalId={editing.id}
-                              initial={{
-                                 name: editing.name,
-                                 species: editing.species as any,
-                                 size: editing.size as any,
-                                 color: editing.color || undefined,
-                                 has_collar: !!editing.has_collar,
-                                 gender: editing.gender as any,
-                                 notes: editing.notes || undefined,
-                                 photos: [],
-                              }}
-                              onSaved={handleEditSaved}
-                              onCancel={() => setEditing(null)}
-                           />
-                        ) : null}
-                     </ModalBody>
-                  </>
-               )}
-            </ModalContent>
-         </Modal>
+         {editing && (
+            <ModalEditAnimal
+               {...disclosureCreateAnimal}
+               defaultValue={{
+                  name: editing?.name,
+                  species: editing?.species,
+                  size: editing?.size,
+                  color: editing?.color || undefined,
+                  has_collar: !!editing?.has_collar,
+                  gender: editing?.gender,
+                  notes: editing?.notes || undefined,
+                  photos: editing?.photos,
+                  id: editing?.id || undefined,
+               }}
+               isEditing
+            />
+         )}
 
          {empty ? (
             <div className="rounded-large border border-dashed p-6 text-center text-default-500">

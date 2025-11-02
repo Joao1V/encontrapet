@@ -24,14 +24,7 @@ export const Users: CollectionConfig = {
       admin: ({ req: { user } }) => {
          return (user as any)?.role === 'admin';
       },
-      read: ({ req: { user } }) => {
-         if ((user as any)?.role === 'admin') return true;
-         return {
-            id: {
-               equals: user?.id,
-            },
-         };
-      },
+      read: () => true,
       create: () => true,
       update: ({ req: { user } }) => {
          if ((user as any)?.role === 'admin') return true;

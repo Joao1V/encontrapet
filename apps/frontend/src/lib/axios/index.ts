@@ -62,6 +62,14 @@ const post = async <TResponse, TData extends Record<string, any> = any>(
    return request<TResponse, TData>({ method: 'POST', url, data, options });
 };
 
+const patch = async <TResponse, TData extends Record<string, any> = any>(
+   url: string,
+   data: TData,
+   options?: Options,
+): Promise<TResponse> => {
+   return request<TResponse, TData>({ method: 'PATCH', url, data, options });
+};
+
 const put = async <TResponse, TData extends Record<string, any> = any>(
    url: string,
    data: TData,
@@ -78,7 +86,7 @@ const del = async <TResponse, TData extends Record<string, any> = any>(
    return request<TResponse, TData>({ method: 'DELETE', url, data, options });
 };
 
-const api = { get, post, put, delete: del };
+const api = { get, post, put, delete: del, patch };
 export type { Options, RequestParams, PaginateResponse, Meta };
 export { MetaSchema };
 export default api;

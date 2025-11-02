@@ -1,21 +1,24 @@
 'use client';
 import { Button, Input, Textarea } from '@heroui/react';
 
+import { QUERY_KEYS } from '@/config/constants';
 import { useCreatePost } from '@/features/publish/services';
 import { GoogleAutocomplete } from '@/lib/google';
 import { getFieldErrorProps } from '@/lib/utils';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useQueryClient } from '@tanstack/react-query';
 import { Controller, useForm } from 'react-hook-form';
 import { PublicationsSchema, type PublicationType } from '../schema/publications.schema';
 
 type Props = {
    defaultType: 'lost' | 'found';
-   animalId?: string;
+   animalId?: number;
    isSubmitting?: boolean;
 };
 
 export default function PublicationForm({ defaultType, animalId, isSubmitting }: Props) {
    const createPost = useCreatePost();
+   const qc = useQueryClient();
 
    const { control, setValue, handleSubmit, getValues } = useForm<PublicationType>({
       resolver: zodResolver(PublicationsSchema),
@@ -23,7 +26,7 @@ export default function PublicationForm({ defaultType, animalId, isSubmitting }:
          title: '',
          description: '',
          status: 'open',
-         type: 'lost',
+         type: defaultType,
          animal: Number(animalId),
          disappearance_date: '',
       },
@@ -32,6 +35,7 @@ export default function PublicationForm({ defaultType, animalId, isSubmitting }:
    const onSubmit = async (data: PublicationType) => {
       console.log(data);
       await createPost.mutateAsync(data);
+      await qc.invalidateQueries({ queryKey: [QUERY_KEYS.POSTS] });
    };
 
    return (

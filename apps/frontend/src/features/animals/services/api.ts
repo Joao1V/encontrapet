@@ -1,30 +1,21 @@
-import api from '@/lib/axios';
-import type { Animal as PayloadAnimal, Photo as PayloadPhoto } from '@payload-types';
+import type { AnimalsType } from '@/features/publish/schema/animals.schema';
+import api, { type PaginateResponse } from '@/lib/axios';
+import type { Animal as AnimalPayload, Photo as PayloadPhoto } from '@payload-types';
 
-export type Animal = {
-   id: string;
-   name: string;
-   species: PayloadAnimal['species'];
-   size?: PayloadAnimal['size'];
-   color?: string | null;
-   has_collar?: boolean | null;
-   gender?: PayloadAnimal['gender'];
-   notes?: string | null;
+export type Animal = AnimalPayload & {
+   photos?: PayloadPhoto[];
 };
 
-export type CreateAnimalInput = Omit<Animal, 'id'>;
+export type CreateAnimalInput = Omit<AnimalsType, 'id'>;
+
 export type UpdateAnimalInput = Partial<CreateAnimalInput>;
 
 class AnimalServices {
-   async listMyAnimals(userId: string): Promise<Animal[]> {
-      const res = await api.get<{ docs: Animal[] }>(`/animals`, {
-         limit: 0,
-         where: { user: { equals: userId } },
-      });
-      return res?.docs ?? [];
+   async listMyAnimals() {
+      return await api.get<PaginateResponse<AnimalPayload[]>>(`/animals/me`);
    }
 
-   async createAnimal(data: CreateAnimalInput): Promise<Animal> {
+   async createAnimal(data: CreateAnimalInput) {
       const payload = {
          name: data.name,
          species: data.species,
@@ -33,11 +24,12 @@ class AnimalServices {
          has_collar: data.has_collar ?? false,
          gender: data.gender,
          notes: data.notes,
+         photos: data.photos,
       };
       return await api.post<Animal, typeof payload>(`/animals`, payload);
    }
 
-   async updateAnimal(id: string, data: UpdateAnimalInput): Promise<Animal> {
+   async updateAnimal(id: number, data: UpdateAnimalInput) {
       const payload = {
          name: data.name,
          species: data.species,
@@ -46,30 +38,18 @@ class AnimalServices {
          has_collar: data.has_collar,
          gender: data.gender,
          notes: data.notes,
+         photos: data.photos,
       };
-      return await api.post<Animal, typeof payload>(`/animals/${id}`, payload);
+      return await api.patch<Animal, typeof payload>(`/animals/${id}`, payload);
    }
 
-   async deleteAnimal(id: string): Promise<boolean> {
+   async deleteAnimal(id: number) {
       try {
          await api.delete(`/animals/${id}`, {});
          return true;
       } catch (e) {
          return false;
       }
-   }
-
-   // Photos
-   async uploadAnimalPhotos(animalId: number, files: File[]): Promise<PayloadPhoto[]> {
-      const uploaded: PayloadPhoto[] = [];
-      for (const file of files) {
-         const fd = new FormData();
-         fd.append('image', file);
-         fd.append('animal', animalId);
-         const res = await api.post<PayloadPhoto, FormData>(`/photos`, fd);
-         uploaded.push(res);
-      }
-      return uploaded;
    }
 }
 

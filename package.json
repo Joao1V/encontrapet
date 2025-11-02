@@ -5,14 +5,19 @@
    "type": "module",
    "packageManager": "pnpm@10.19.0",
    "scripts": {
-      "dev": "pnpm --parallel --filter \"./apps/*\" dev",
-      "dev:backend": "pnpm --filter backend dev",
-      "dev:frontend": "pnpm --filter frontend dev",
-      "build": "pnpm --filter \"./apps/*\" build",
-      "build:backend": "pnpm --filter backend build",
-      "build:frontend": "pnpm --filter frontend build",
-      "lint": "pnpm --filter \"./apps/*\" lint",
-      "format": "biome format --write .",
+      "dev": "turbo run dev",
+      "dev:backend": "turbo run dev --filter=backend",
+      "dev:frontend": "turbo run dev --filter=frontend",
+      "build": "turbo run build",
+      "build:backend": "turbo run build --filter=backend",
+      "build:frontend": "turbo run build --filter=frontend",
+      "start": "turbo run start",
+      "check-types": "turbo run check-types",
+      "lint": "turbo run lint",
+      "format": "turbo run format",
+      "test": "turbo run test",
+      "test:e2e": "turbo run test:e2e",
+      "test:int": "turbo run test:int",
       "check": "biome check --write .",
       "clean": "pnpm clean:cache && pnpm clean:deps",
       "clean:cache": "rm -rf apps/*/.next apps/*/.turbo .turbo node_modules/.cache",
@@ -20,7 +25,8 @@
       "clean:all": "pnpm clean && pnpm install"
    },
    "devDependencies": {
-      "@biomejs/biome": "^2.2.7"
+      "@biomejs/biome": "^2.2.7",
+      "turbo": "^2.6.0"
    },
    "pnpm": {
       "onlyBuiltDependencies": [

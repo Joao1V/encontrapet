@@ -2,7 +2,7 @@
 import { Avatar, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger } from '@heroui/react';
 
 import { AuthService } from '@/features/auth/services';
-import { LogOut, User } from 'lucide-react';
+import { LogOut, PawPrint, Rss, UserRound } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
 
@@ -26,13 +26,12 @@ export function AuthAvatar() {
                   <Avatar
                      as="button"
                      className="cursor-pointer transition-transform hover:scale-105"
-                     name={user.name as string}
-                     src={(user as any)?.image as string | undefined}
+                     name={user?.name as string}
                      size="md"
                   />
                </DropdownTrigger>
                <DropdownMenu aria-label="User menu">
-                  <DropdownItem key="profile" startContent={<User className="h-4 w-4" />}>
+                  <DropdownItem key="profile" variant={'faded'}>
                      <div className="flex flex-col">
                         <span className="font-semibold">{user.name}</span>
                         <span className="text-default-500 text-xs">{user.email}</span>
@@ -40,21 +39,21 @@ export function AuthAvatar() {
                   </DropdownItem>
                   <DropdownItem
                      key="minhas-publicacoes"
-                     startContent={<User className="h-4 w-4" />}
+                     startContent={<Rss className="h-4 w-4" />}
                      onPress={() => router.push('/minhas-publicacoes')}
                   >
                      Minhas publicações
                   </DropdownItem>
                   <DropdownItem
                      key="meus-animais"
-                     startContent={<User className="h-4 w-4" />}
+                     startContent={<PawPrint className="h-4 w-4" />}
                      onPress={() => router.push('/meus-animais')}
                   >
                      Meus animais
                   </DropdownItem>
                   <DropdownItem
                      key="perfil"
-                     startContent={<User className="h-4 w-4" />}
+                     startContent={<UserRound className="h-4 w-4" />}
                      onPress={() => router.push('/perfil')}
                   >
                      Perfil
