@@ -84,26 +84,26 @@ export default function LoginPage() {
                <p className="text-center text-default-500">Entre para continuar ajudando pets</p>
             </CardHeader>
             <CardBody className="gap-6 px-8 pb-8">
-               <div className="flex gap-2">
-                  <Button
-                     fullWidth
-                     variant={loginMethod === 'email' ? 'solid' : 'bordered'}
-                     color={loginMethod === 'email' ? 'primary' : 'default'}
-                     startContent={<Mail className="h-4 w-4" />}
-                     onPress={() => setLoginMethod('email')}
-                  >
-                     Email
-                  </Button>
-                  <Button
-                     fullWidth
-                     variant={loginMethod === 'phone' ? 'solid' : 'bordered'}
-                     color={loginMethod === 'phone' ? 'primary' : 'default'}
-                     startContent={<Phone className="h-4 w-4" />}
-                     onPress={() => setLoginMethod('phone')}
-                  >
-                     Celular
-                  </Button>
-               </div>
+               {/*<div className="flex gap-2">*/}
+               {/*   <Button*/}
+               {/*      fullWidth*/}
+               {/*      variant={loginMethod === 'email' ? 'solid' : 'bordered'}*/}
+               {/*      color={loginMethod === 'email' ? 'primary' : 'default'}*/}
+               {/*      startContent={<Mail className="h-4 w-4" />}*/}
+               {/*      onPress={() => setLoginMethod('email')}*/}
+               {/*   >*/}
+               {/*      Email*/}
+               {/*   </Button>*/}
+               {/*   <Button*/}
+               {/*      fullWidth*/}
+               {/*      variant={loginMethod === 'phone' ? 'solid' : 'bordered'}*/}
+               {/*      color={loginMethod === 'phone' ? 'primary' : 'default'}*/}
+               {/*      startContent={<Phone className="h-4 w-4" />}*/}
+               {/*      onPress={() => setLoginMethod('phone')}*/}
+               {/*   >*/}
+               {/*      Celular*/}
+               {/*   </Button>*/}
+               {/*</div>*/}
 
                {loginMethod === 'email' ? (
                   <form
