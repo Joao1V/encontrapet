@@ -1,0 +1,6 @@
+{
+  "version": 2,
+  "buildCommand": "cd ../.. && turbo run build --filter=backend",
+  "installCommand": "cd ../.. && pnpm install",
+  "framework": "nextjs"
+}
