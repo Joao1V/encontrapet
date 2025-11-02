@@ -31,7 +31,7 @@ export function Footer() {
                   <ul className="space-y-3">
                      <li>
                         <Link
-                           href="/cadastrar-perdido"
+                           href="#"
                            className="text-muted-foreground text-sm transition-colors hover:text-foreground"
                         >
                            Cadastrar Pet Perdido
@@ -39,7 +39,7 @@ export function Footer() {
                      </li>
                      <li>
                         <Link
-                           href="/cadastrar-encontrado"
+                           href="#"
                            className="text-muted-foreground text-sm transition-colors hover:text-foreground"
                         >
                            Cadastrar Pet Encontrado
@@ -55,7 +55,7 @@ export function Footer() {
                      </li>
                      <li>
                         <Link
-                           href="/dicas"
+                           href="#"
                            className="text-muted-foreground text-sm transition-colors hover:text-foreground"
                         >
                            Dicas e Orientações
