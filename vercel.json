@@ -1,4 +1,5 @@
 {
-  "buildCommand": "cd ../.. && turbo run build --filter=frontend",
+  "buildCommand": "pnpm turbo run build --filter=frontend",
+  "outputDirectory": "apps/frontend/.next",
   "installCommand": "pnpm install"
 }
