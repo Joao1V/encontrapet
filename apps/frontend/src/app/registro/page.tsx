@@ -72,7 +72,7 @@ export default function RegistroPage() {
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-primary-50 to-secondary-50 p-4 py-12">
          <Card className="w-full max-w-md shadow-xl">
             <CardHeader className="flex flex-col items-center gap-3 pt-8 pb-4">
-               <h1 className="text-center font-bold text-3xl">Criar Conta</h1>
+               <h1 className="text-center font-bold text-3xl">Inscreva-se</h1>
                <p className="text-center text-default-500">Junte-se a nós e ajude pets perdidos</p>
             </CardHeader>
             <CardBody className="gap-6 px-8 pb-8">
@@ -183,7 +183,6 @@ export default function RegistroPage() {
                   <Button
                      type="submit"
                      color="primary"
-                     size="lg"
                      className="mt-2 font-semibold"
                      isLoading={isLoading}
                   >

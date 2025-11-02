@@ -227,7 +227,6 @@ export default function LoginPage() {
                <Button
                   type="submit"
                   color="primary"
-                  size="lg"
                   className="font-semibold"
                   isLoading={isLoading}
                   onPress={() => {
