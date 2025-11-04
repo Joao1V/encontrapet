@@ -196,3 +196,81 @@ create table feedback
 
 alter table feedback
     owner to postgres;
+
+create index users_sessions_order_idx
+    on users_sessions (_order);
+
+create index users_sessions_parent_id_idx
+    on users_sessions (_parent_id);
+
+create index users_updated_at_idx
+    on users (updated_at);
+
+create index users_created_at_idx
+    on users (created_at);
+
+create unique index users_email_idx
+    on users (email);
+
+create index products_updated_at_idx
+    on products (updated_at);
+
+create index products_created_at_idx
+    on products (created_at);
+
+create index locations_updated_at_idx
+    on locations (updated_at);
+
+create index locations_created_at_idx
+    on locations (created_at);
+
+create index animals_updated_at_idx
+    on animals (updated_at);
+
+create index animals_created_at_idx
+    on animals (created_at);
+
+create index animals_user_idx
+    on animals (user_id);
+
+create index photos_publication_idx
+    on photos (publication_id);
+
+create index photos_updated_at_idx
+    on photos (updated_at);
+
+create index photos_created_at_idx
+    on photos (created_at);
+
+create unique index photos_filename_idx
+    on photos (filename);
+
+create index photos_animal_idx
+    on photos (animal_id);
+
+create index publications_user_idx
+    on publications (user_id);
+
+create index publications_animal_idx
+    on publications (animal_id);
+
+create index publications_location_idx
+    on publications (location_id);
+
+create index publications_updated_at_idx
+    on publications (updated_at);
+
+create index publications_created_at_idx
+    on publications (created_at);
+
+create index feedback_publication_idx
+    on feedback (publication_id);
+
+create index feedback_user_idx
+    on feedback (user_id);
+
+create index feedback_updated_at_idx
+    on feedback (updated_at);
+
+create index feedback_created_at_idx
+    on feedback (created_at);
