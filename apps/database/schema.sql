@@ -47,21 +47,6 @@ create table users
 alter table users
     owner to postgres;
 
-
-create table products
-(
-    id         serial
-        primary key,
-    name       varchar                                   not null,
-    price      numeric                                   not null,
-    updated_at timestamp(3) with time zone default now() not null,
-    created_at timestamp(3) with time zone default now() not null
-);
-
-alter table products
-    owner to postgres;
-
-
 create table locations
 (
     id          serial
@@ -211,12 +196,6 @@ create index users_created_at_idx
 
 create unique index users_email_idx
     on users (email);
-
-create index products_updated_at_idx
-    on products (updated_at);
-
-create index products_created_at_idx
-    on products (created_at);
 
 create index locations_updated_at_idx
     on locations (updated_at);
